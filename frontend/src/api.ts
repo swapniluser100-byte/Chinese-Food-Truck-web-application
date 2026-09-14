@@ -1,4 +1,4 @@
-import type { RenewalStatus, MenuItem, OrderUnit, OrderWithItems, Settings } from "./types";
+import type { MenuItem, OrderUnit, OrderWithItems, Settings } from "./types";
 
 const BASE = (import.meta.env.VITE_API_BASE ?? "").replace(/\/$/, "");
 
@@ -107,12 +107,6 @@ export const api = {
   getSettings: () => request<{ settings: Settings }>("/api/settings"),
   adminUpdateSettings: (settings: Omit<Settings, "app_name" | "app_id">) =>
     request<{ settings: Settings }>("/api/admin/settings", { method: "PUT", body: JSON.stringify(settings) }, true),
-
-  // Renewal check — named to avoid ad-blocker/paywall filter lists that
-  // target URLs containing "license" (which is exactly why the QR image
-  // silently failed to load under a content blocker during testing).
-  getRenewalStatus: () => request<RenewalStatus>("/api/renewal/status"),
-  renewalQrUrl: () => `${BASE}/api/renewal/qr`,
 };
 
 export function setAdminToken(token: string) {

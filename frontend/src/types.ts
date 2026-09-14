@@ -50,11 +50,3 @@ export interface Settings {
   app_name: string;
   app_id: string;
 }
-
-export interface RenewalStatus {
-  active: boolean;
-  renewal_date: string | null;
-  amount: number | null;
-  app_name: string;
-  app_id: string;
-}

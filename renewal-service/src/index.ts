@@ -1,13 +1,25 @@
 import { Hono } from "hono";
-import type { Env } from "../types";
-import { DEFAULT_SETTINGS } from "./settings";
-import { buildUpiUri, renderQrSvg } from "../qr";
+import { cors } from "hono/cors";
+import { buildUpiUri, renderQrSvg } from "./qr";
 
-export const renewalRoutes = new Hono<{ Bindings: Env }>();
+interface Env {
+  SHEET_ID: string;
+  RENEWAL_UPI_ID: string;
+  RENEWAL_UPI_PAYEE_NAME: string;
+}
+
+const app = new Hono<{ Bindings: Env }>();
+
+app.use(
+  "/*",
+  cors({
+    origin: "*", // any client app is expected to call this from its own origin
+    allowMethods: ["GET", "OPTIONS"],
+  })
+);
 
 // Minimal RFC4180-ish CSV parser — handles quoted fields with embedded
-// commas/newlines and doubled-quote escaping, which is all Google's CSV
-// export needs (e.g. the Name column here wraps onto a second line).
+// commas/newlines and doubled-quote escaping.
 function parseCsv(text: string): string[][] {
   const rows: string[][] = [];
   let row: string[] = [];
@@ -57,18 +69,21 @@ function parseDDMMYYYY(s: string): Date | null {
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
-interface RenewalRow {
+function todayUTC(): Date {
+  const now = new Date();
+  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+}
+
+interface CustomerRow {
   name: string;
   renewalDate: Date;
   amount: number;
 }
 
 // Fetches the public renewal-tracking sheet fresh on every call (no caching —
-// a stale renewal date is exactly the kind of bug that's invisible until
-// someone's genuinely locked out or wrongly let in) and finds the row for
-// this deployment's app_id. `cf.cacheTtl: 0` also stops Cloudflare's own
-// edge cache from serving a stale copy of the upstream request.
-async function fetchRenewalRow(env: Env): Promise<RenewalRow | null> {
+// a stale renewal date is a real, confusing bug) and finds the row for the
+// given customerId.
+async function fetchCustomerRow(env: Env, customerId: string): Promise<CustomerRow | null> {
   const res = await fetch(`https://docs.google.com/spreadsheets/d/${env.SHEET_ID}/export?format=csv`, {
     cf: { cacheTtl: 0, cacheEverything: false },
   });
@@ -85,11 +100,8 @@ async function fetchRenewalRow(env: Env): Promise<RenewalRow | null> {
   const amountIdx = header.findIndex((h) => h.includes("amount"));
   if (idIdx === -1 || dateIdx === -1 || amountIdx === -1) return null;
 
-  const settingsRow = await env.DB.prepare("SELECT app_id FROM settings WHERE id = 1").first<{ app_id: string }>();
-  const appId = settingsRow?.app_id ?? DEFAULT_SETTINGS.app_id;
-
   for (const cols of rows.slice(1)) {
-    if ((cols[idIdx] ?? "").trim() === appId) {
+    if ((cols[idIdx] ?? "").trim() === customerId) {
       const renewalDate = parseDDMMYYYY(cols[dateIdx] ?? "");
       const amount = Number((cols[amountIdx] ?? "").trim());
       if (!renewalDate || !Number.isFinite(amount)) return null;
@@ -99,51 +111,59 @@ async function fetchRenewalRow(env: Env): Promise<RenewalRow | null> {
   return null;
 }
 
-function todayUTC(): Date {
-  const now = new Date();
-  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-}
+app.get("/health", (c) => c.json({ ok: true, time: new Date().toISOString() }));
 
-// GET /api/renewal/status — public. Whether this deployment's renewal is
-// current, per the vendor's spreadsheet. Fails open (active: true) if the
-// sheet is unreachable or this app_id has no row, rather than locking staff
-// out of their own ordering tool over a transient Google outage.
-renewalRoutes.get("/status", async (c) => {
-  const settingsRow = await c.env.DB.prepare("SELECT app_name, app_id FROM settings WHERE id = 1").first<{
-    app_name: string;
-    app_id: string;
-  }>();
-  const app_name = settingsRow?.app_name ?? DEFAULT_SETTINGS.app_name;
-  const app_id = settingsRow?.app_id ?? DEFAULT_SETTINGS.app_id;
+// GET /status?customerId=XXX — public. Any client app calls this with its own
+// customerId (the row key in the shared renewal-tracking sheet). Fails open
+// (active: true) if the sheet is unreachable or the customerId has no row,
+// so a transient Google outage or a missing row never bricks a client app.
+app.get("/status", async (c) => {
+  const customerId = c.req.query("customerId");
+  if (!customerId) return c.json({ error: "customerId query parameter is required" }, 400);
 
   try {
-    const row = await fetchRenewalRow(c.env);
+    const row = await fetchCustomerRow(c.env, customerId);
     if (!row) {
-      return c.json({ active: true, renewal_date: null, amount: null, app_name, app_id });
+      return c.json({ active: true, renewal_date: null, amount: null, name: null, customer_id: customerId });
     }
     const active = row.renewalDate.getTime() >= todayUTC().getTime();
-    return c.json({ active, renewal_date: row.renewalDate.toISOString().slice(0, 10), amount: row.amount, app_name, app_id });
+    return c.json({
+      active,
+      renewal_date: row.renewalDate.toISOString().slice(0, 10),
+      amount: row.amount,
+      name: row.name,
+      customer_id: customerId,
+    });
   } catch {
-    return c.json({ active: true, renewal_date: null, amount: null, app_name, app_id });
+    return c.json({ active: true, renewal_date: null, amount: null, name: null, customer_id: customerId });
   }
 });
 
-// GET /api/renewal/qr — public. UPI QR for the renewal amount, paid to the vendor's UPI ID.
-renewalRoutes.get("/qr", async (c) => {
+// GET /qr?customerId=XXX — public. UPI QR for that customer's renewal amount,
+// paid to the vendor's collection UPI ID.
+app.get("/qr", async (c) => {
+  const customerId = c.req.query("customerId");
+  if (!customerId) return c.json({ error: "customerId query parameter is required" }, 400);
   if (!c.env.RENEWAL_UPI_ID) return c.json({ error: "RENEWAL_UPI_ID is not configured on the server" }, 500);
 
-  const row = await fetchRenewalRow(c.env);
-  if (!row || !row.amount) return c.json({ error: "No renewal amount found" }, 404);
-
-  const settingsRow = await c.env.DB.prepare("SELECT app_id FROM settings WHERE id = 1").first<{ app_id: string }>();
-  const app_id = settingsRow?.app_id ?? DEFAULT_SETTINGS.app_id;
+  const row = await fetchCustomerRow(c.env, customerId);
+  if (!row || !row.amount) return c.json({ error: "No renewal amount found for that customerId" }, 404);
 
   const uri = buildUpiUri({
     upiId: c.env.RENEWAL_UPI_ID,
     payeeName: c.env.RENEWAL_UPI_PAYEE_NAME || "App Renewal",
     amount: row.amount,
-    note: `Renewal ${app_id}`,
+    note: `Renewal ${customerId}`,
   });
   const svg = renderQrSvg(uri, 320);
   return c.body(svg, 200, { "Content-Type": "image/svg+xml", "Cache-Control": "no-store" });
 });
+
+app.notFound((c) => c.json({ error: "Not found" }, 404));
+
+app.onError((err, c) => {
+  console.error(err);
+  return c.json({ error: "Internal server error" }, 500);
+});
+
+export default app;

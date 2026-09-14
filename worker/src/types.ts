@@ -9,9 +9,6 @@ export interface Env {
   TOKEN_SECRET: string;
   UPI_ID: string;
   UPI_PAYEE_NAME: string;
-  SHEET_ID: string; // public Google Sheet tracking renewal dates per app_id
-  RENEWAL_UPI_ID: string;
-  RENEWAL_UPI_PAYEE_NAME: string;
 }
 
 export interface MenuItem {
@@ -71,12 +68,4 @@ export interface Settings {
   kitchen_columns: number; // tiles per row on the Kitchen board
   app_name: string; // fixed app identity for licensing — not editable via the admin API
   app_id: string; // fixed row key looked up in the renewal-tracking Google Sheet — not editable
-}
-
-export interface LicenseStatus {
-  active: boolean;
-  renewal_date: string | null; // YYYY-MM-DD
-  amount: number | null;
-  app_name: string;
-  app_id: string;
 }
