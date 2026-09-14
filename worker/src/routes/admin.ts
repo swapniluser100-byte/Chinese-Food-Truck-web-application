@@ -141,7 +141,7 @@ adminRoutes.get("/summary", async (c) => {
 adminRoutes.get("/export", async (c) => {
   const date = c.req.query("date") ?? new Date().toISOString().slice(0, 10);
   const { results } = await c.env.DB.prepare(
-    `SELECT o.id, o.customer_name, m.name as item_name, oi.quantity, oi.unit, oi.rate,
+    `SELECT o.id, o.customer_name, m.name as item_name, oi.quantity, oi.unit, oi.grams, oi.rate,
             (oi.quantity * oi.rate) as line_total, o.total_amount, o.status, o.created_at
      FROM order_items oi
      JOIN orders o ON o.id = oi.order_id
@@ -156,6 +156,7 @@ adminRoutes.get("/export", async (c) => {
       item_name: string;
       quantity: number;
       unit: string;
+      grams: number | null;
       rate: number;
       line_total: number;
       total_amount: number;
@@ -163,10 +164,10 @@ adminRoutes.get("/export", async (c) => {
       created_at: string;
     }>();
 
-  const header = "Order ID,Customer Name,Item,Unit,Quantity,Line Total,Order Total,Status,Created At";
+  const header = "Order ID,Customer Name,Item,Unit,Grams,Quantity,Line Total,Order Total,Status,Created At";
   const escapeCsv = (v: string) => `"${v.replace(/"/g, '""')}"`;
   const rows = results.map((r) =>
-    [r.id, escapeCsv(r.customer_name ?? ""), escapeCsv(r.item_name), r.unit, r.quantity, r.line_total, r.total_amount, r.status, r.created_at].join(",")
+    [r.id, escapeCsv(r.customer_name ?? ""), escapeCsv(r.item_name), r.unit, r.grams ?? "", r.quantity, r.line_total, r.total_amount, r.status, r.created_at].join(",")
   );
   const csv = [header, ...rows].join("\n");
 
@@ -174,4 +175,33 @@ adminRoutes.get("/export", async (c) => {
     "Content-Type": "text/csv",
     "Content-Disposition": `attachment; filename="orders_${date}.csv"`,
   });
+});
+
+// ---- Branding ----
+
+const MAX_LOGO_DATA_URL_LENGTH = 1_500_000; // ~1.1MB of raw image data once base64-decoded
+
+// PUT /api/admin/settings — update app name / slogan / logo
+adminRoutes.put("/settings", async (c) => {
+  const body = await c.req.json<{ name?: string; slogan?: string | null; logo_data_url?: string | null }>();
+  const name = (body.name ?? "").trim();
+  if (!name) return c.json({ error: "name is required" }, 400);
+
+  const slogan = body.slogan?.trim() || null;
+  const logo_data_url = body.logo_data_url || null;
+  if (logo_data_url && logo_data_url.length > MAX_LOGO_DATA_URL_LENGTH) {
+    return c.json({ error: "Logo image is too large — please use a smaller file (under ~1MB)" }, 400);
+  }
+  if (logo_data_url && !logo_data_url.startsWith("data:image/")) {
+    return c.json({ error: "logo_data_url must be an image data URL" }, 400);
+  }
+
+  await c.env.DB.prepare(
+    `INSERT INTO settings (id, name, slogan, logo_data_url) VALUES (1, ?1, ?2, ?3)
+     ON CONFLICT(id) DO UPDATE SET name = excluded.name, slogan = excluded.slogan, logo_data_url = excluded.logo_data_url`
+  )
+    .bind(name, slogan, logo_data_url)
+    .run();
+
+  return c.json({ settings: { name, slogan, logo_data_url } });
 });

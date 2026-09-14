@@ -35,6 +35,7 @@ export interface OrderItem {
   quantity: number;
   rate: number; // auto-filled from the menu item, editable by staff per line
   unit: OrderUnit;
+  grams: number | null; // set when unit === 'gram'
 }
 
 export interface OrderItemWithMenu extends OrderItem {
@@ -52,4 +53,12 @@ export interface NewOrderItemInput {
   quantity: number;
   rate: number;
   unit: OrderUnit;
+  grams?: number;
+}
+
+export interface Settings {
+  id: 1;
+  name: string;
+  slogan: string | null;
+  logo_data_url: string | null;
 }

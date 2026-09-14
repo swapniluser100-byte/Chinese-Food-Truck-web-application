@@ -24,6 +24,7 @@ export interface OrderItemWithMenu {
   quantity: number;
   rate: number;
   unit: OrderUnit;
+  grams: number | null;
   item_name: string;
   item_category: string;
   image_ref_id: string;
@@ -36,4 +37,10 @@ export interface OrderWithItems {
   status: OrderStatus;
   created_at: string;
   items: OrderItemWithMenu[];
+}
+
+export interface Settings {
+  name: string;
+  slogan: string | null;
+  logo_data_url: string | null;
 }

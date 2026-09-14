@@ -8,6 +8,7 @@ import { AdminLayout } from "./pages/admin/AdminLayout";
 import { MenuManager } from "./pages/admin/MenuManager";
 import { AdminOrders } from "./pages/admin/Orders";
 import { AdminSummary } from "./pages/admin/Summary";
+import { AdminBranding } from "./pages/admin/Branding";
 
 export default function App() {
   return (
@@ -27,6 +28,7 @@ export default function App() {
         <Route path="/admin/menu" element={<MenuManager />} />
         <Route path="/admin/orders" element={<AdminOrders />} />
         <Route path="/admin/summary" element={<AdminSummary />} />
+        <Route path="/admin/branding" element={<AdminBranding />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/staff" replace />} />

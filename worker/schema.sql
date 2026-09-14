@@ -29,8 +29,18 @@ CREATE TABLE IF NOT EXISTS order_items (
   quantity INTEGER NOT NULL,
   rate INTEGER NOT NULL,
   unit TEXT NOT NULL DEFAULT 'full', -- half, full, gram
+  grams INTEGER, -- set when unit = 'gram'
   FOREIGN KEY(order_id) REFERENCES orders(id),
   FOREIGN KEY(menu_item_id) REFERENCES menu_items(id)
+);
+
+-- Single-row app branding: name, slogan, and logo (stored as a data: URL —
+-- there's no object storage wired up, and a small logo fits fine in D1).
+CREATE TABLE IF NOT EXISTS settings (
+  id INTEGER PRIMARY KEY CHECK (id = 1),
+  name TEXT NOT NULL DEFAULT 'Chinese Food Truck',
+  slogan TEXT,
+  logo_data_url TEXT
 );
 
 CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status);

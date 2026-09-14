@@ -1,12 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { api } from "../../api";
 import type { OrderWithItems } from "../../types";
-import { ORDER_UNITS } from "../../types";
+import { formatOrderLine } from "../../orderSummary";
 import { TopBar } from "../../components/TopBar";
-
-function unitLabel(unit: string): string {
-  return ORDER_UNITS.find((u) => u.value === unit)?.label ?? unit;
-}
 
 export function Kitchen() {
   const [orders, setOrders] = useState<OrderWithItems[]>([]);
@@ -57,7 +53,7 @@ export function Kitchen() {
             <div className="space-y-1">
               {order.items.map((line) => (
                 <div key={line.id} className="text-2xl font-semibold">
-                  {line.quantity} × {line.item_name} <span className="text-base text-neutral-500">({unitLabel(line.unit)})</span>
+                  {formatOrderLine(line)}
                 </div>
               ))}
             </div>

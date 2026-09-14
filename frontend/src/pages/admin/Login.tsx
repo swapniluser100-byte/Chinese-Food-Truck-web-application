@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api, setAdminToken } from "../../api";
+import { useBranding } from "../../BrandingContext";
 
 export function AdminLogin() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { settings } = useBranding();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -26,7 +28,16 @@ export function AdminLogin() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-neutral-100 p-4">
       <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-md border border-neutral-200 p-6 w-full max-w-sm space-y-4">
-        <h1 className="text-xl font-bold text-center">Admin Portal</h1>
+        <div className="flex flex-col items-center gap-1 mb-1">
+          {settings.logo_data_url ? (
+            <img src={settings.logo_data_url} alt={settings.name} className="w-14 h-14 rounded-xl object-cover" />
+          ) : (
+            <span className="text-4xl">🥡</span>
+          )}
+          <h1 className="text-xl font-bold text-center mt-1">{settings.name}</h1>
+          {settings.slogan && <p className="text-xs text-neutral-500 italic text-center">{settings.slogan}</p>}
+          <p className="text-sm text-neutral-400 mt-1">Admin Portal</p>
+        </div>
         <input
           type="password"
           value={password}

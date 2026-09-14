@@ -3,8 +3,11 @@ import { useNavigate, useParams } from "react-router-dom";
 import { api } from "../../api";
 import type { MenuItem, OrderUnit, OrderWithItems } from "../../types";
 import { ORDER_UNITS } from "../../types";
+import { formatOrderLine } from "../../orderSummary";
 import { MenuImage } from "../../components/MenuImage";
 import { TopBar } from "../../components/TopBar";
+
+const DEFAULT_GRAMS = 250;
 
 interface CartLine {
   lineId: string;
@@ -12,10 +15,11 @@ interface CartLine {
   quantity: number;
   unit: OrderUnit;
   rate: number; // auto-filled from item.rate, editable by staff
+  grams: number; // only used when unit === "gram"
 }
 
 function newLine(item: MenuItem): CartLine {
-  return { lineId: crypto.randomUUID(), item, quantity: 1, unit: "full", rate: item.rate };
+  return { lineId: crypto.randomUUID(), item, quantity: 1, unit: "full", rate: item.rate, grams: DEFAULT_GRAMS };
 }
 
 export function StaffOrder() {
@@ -73,11 +77,17 @@ export function StaffOrder() {
   }
 
   function setUnit(lineId: string, unit: OrderUnit) {
-    setCart((prev) => prev.map((line) => (line.lineId === lineId ? { ...line, unit } : line)));
+    setCart((prev) =>
+      prev.map((line) => (line.lineId === lineId ? { ...line, unit, quantity: unit === "gram" ? 1 : line.quantity } : line))
+    );
   }
 
   function setRate(lineId: string, rate: number) {
     setCart((prev) => prev.map((line) => (line.lineId === lineId ? { ...line, rate } : line)));
+  }
+
+  function setGrams(lineId: string, grams: number) {
+    setCart((prev) => prev.map((line) => (line.lineId === lineId ? { ...line, grams } : line)));
   }
 
   function removeLine(lineId: string) {
@@ -93,7 +103,13 @@ export function StaffOrder() {
     try {
       const { order } = await api.createOrder({
         customer_name: customerName.trim() || undefined,
-        items: cart.map((line) => ({ menu_item_id: line.item.id, quantity: line.quantity, rate: line.rate, unit: line.unit })),
+        items: cart.map((line) => ({
+          menu_item_id: line.item.id,
+          quantity: line.quantity,
+          rate: line.rate,
+          unit: line.unit,
+          grams: line.unit === "gram" ? line.grams : undefined,
+        })),
       });
       setOrder(order);
     } catch (e) {
@@ -206,21 +222,34 @@ export function StaffOrder() {
                         />
                       </div>
 
-                      <div className="flex items-center gap-2 ml-auto">
-                        <button
-                          className="tap-target w-8 h-8 rounded-full bg-neutral-200 text-lg font-bold"
-                          onClick={() => setQuantity(line.lineId, line.quantity - 1)}
-                        >
-                          −
-                        </button>
-                        <span className="w-6 text-center font-semibold">{line.quantity}</span>
-                        <button
-                          className="tap-target w-8 h-8 rounded-full bg-neutral-200 text-lg font-bold"
-                          onClick={() => setQuantity(line.lineId, line.quantity + 1)}
-                        >
-                          +
-                        </button>
-                      </div>
+                      {line.unit === "gram" ? (
+                        <div className="flex items-center gap-1 px-2 py-1.5 rounded-lg border border-neutral-300 ml-auto">
+                          <input
+                            type="number"
+                            min={1}
+                            value={line.grams}
+                            onChange={(e) => setGrams(line.lineId, Math.max(1, Number(e.target.value) || 0))}
+                            className="w-16 text-sm outline-none"
+                          />
+                          <span className="text-neutral-500 text-sm">grams</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2 ml-auto">
+                          <button
+                            className="tap-target w-8 h-8 rounded-full bg-neutral-200 text-lg font-bold"
+                            onClick={() => setQuantity(line.lineId, line.quantity - 1)}
+                          >
+                            −
+                          </button>
+                          <span className="w-6 text-center font-semibold">{line.quantity}</span>
+                          <button
+                            className="tap-target w-8 h-8 rounded-full bg-neutral-200 text-lg font-bold"
+                            onClick={() => setQuantity(line.lineId, line.quantity + 1)}
+                          >
+                            +
+                          </button>
+                        </div>
+                      )}
                     </div>
 
                     <div className="text-right text-sm font-semibold text-brand-600">
@@ -265,10 +294,7 @@ export function StaffOrder() {
               <div className="space-y-1">
                 {order.items.map((line) => (
                   <div key={line.id} className="flex justify-between text-sm border-b border-neutral-100 py-1 last:border-0">
-                    <span>
-                      {line.quantity} × {line.item_name}{" "}
-                      <span className="text-neutral-400">({ORDER_UNITS.find((u) => u.value === line.unit)?.label ?? line.unit})</span>
-                    </span>
+                    <span>{formatOrderLine(line)}</span>
                     <span className="font-medium">₹{line.quantity * line.rate}</span>
                   </div>
                 ))}

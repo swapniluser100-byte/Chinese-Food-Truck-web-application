@@ -1,4 +1,4 @@
-import type { MenuItem, OrderUnit, OrderWithItems } from "./types";
+import type { MenuItem, OrderUnit, OrderWithItems, Settings } from "./types";
 
 const BASE = (import.meta.env.VITE_API_BASE ?? "").replace(/\/$/, "");
 
@@ -36,7 +36,7 @@ export const api = {
   // Orders (staff)
   createOrder: (payload: {
     customer_name?: string;
-    items: { menu_item_id: number; quantity: number; rate: number; unit: OrderUnit }[];
+    items: { menu_item_id: number; quantity: number; rate: number; unit: OrderUnit; grams?: number }[];
   }) => request<{ order: OrderWithItems }>("/api/orders", { method: "POST", body: JSON.stringify(payload) }),
   getOrder: (id: number) => request<{ order: OrderWithItems }>(`/api/orders/${id}`),
   listOrders: (status?: string) =>
@@ -77,6 +77,11 @@ export const api = {
     if (!res.ok) throw new Error(`Export failed (${res.status})`);
     return res.blob();
   },
+
+  // Branding
+  getSettings: () => request<{ settings: Settings }>("/api/settings"),
+  adminUpdateSettings: (settings: Settings) =>
+    request<{ settings: Settings }>("/api/admin/settings", { method: "PUT", body: JSON.stringify(settings) }, true),
 };
 
 export function setAdminToken(token: string) {

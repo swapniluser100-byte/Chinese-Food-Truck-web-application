@@ -37,18 +37,21 @@ orderRoutes.post("/", async (c) => {
     return c.json({ error: "items must be a non-empty array of { menu_item_id, quantity, rate, unit }" }, 400);
   }
   for (const line of items) {
-    if (
-      !Number.isInteger(line.menu_item_id) ||
-      !Number.isInteger(line.quantity) ||
-      line.quantity < 1 ||
-      !Number.isFinite(line.rate) ||
-      line.rate <= 0 ||
-      !ORDER_UNITS.includes(line.unit)
-    ) {
+    const baseValid =
+      Number.isInteger(line.menu_item_id) &&
+      Number.isInteger(line.quantity) &&
+      line.quantity >= 1 &&
+      Number.isFinite(line.rate) &&
+      line.rate > 0 &&
+      ORDER_UNITS.includes(line.unit);
+    if (!baseValid) {
       return c.json(
         { error: "Each item needs menu_item_id, a positive integer quantity, a positive rate, and unit of half/full/gram" },
         400
       );
+    }
+    if (line.unit === "gram" && (!Number.isInteger(line.grams) || (line.grams as number) <= 0)) {
+      return c.json({ error: "gram lines need a positive integer grams value" }, 400);
     }
   }
 
@@ -75,8 +78,8 @@ orderRoutes.post("/", async (c) => {
 
   const itemInserts = items.map((line) =>
     c.env.DB.prepare(
-      `INSERT INTO order_items (order_id, menu_item_id, quantity, rate, unit) VALUES (?1, ?2, ?3, ?4, ?5)`
-    ).bind(orderId, line.menu_item_id, line.quantity, Math.round(line.rate), line.unit)
+      `INSERT INTO order_items (order_id, menu_item_id, quantity, rate, unit, grams) VALUES (?1, ?2, ?3, ?4, ?5, ?6)`
+    ).bind(orderId, line.menu_item_id, line.quantity, Math.round(line.rate), line.unit, line.unit === "gram" ? line.grams : null)
   );
   await c.env.DB.batch(itemInserts);
 

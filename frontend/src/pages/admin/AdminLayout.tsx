@@ -22,6 +22,7 @@ export function AdminLayout() {
           { to: "/admin/menu", label: "Menu" },
           { to: "/admin/orders", label: "Orders" },
           { to: "/admin/summary", label: "Reports" },
+          { to: "/admin/branding", label: "Branding" },
         ]}
       />
       <div className="px-4 pt-2 flex justify-end">
