@@ -6,7 +6,7 @@ compatibility_flags = ["nodejs_compat"]
 [[d1_databases]]
 binding = "DB"
 database_name = "chinese_food_truck"
-database_id = "REPLACE_WITH_YOUR_D1_DATABASE_ID"
+database_id = "645e12de-7bbf-4990-a229-ad3a053f5d7a"
 
 # Set these with `wrangler secret put <NAME>` — do NOT put real secrets here.
 # ADMIN_PASSWORD      - password admin staff use to log into the Admin Portal
