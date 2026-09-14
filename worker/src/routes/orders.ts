@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { ORDER_UNITS } from "../types";
 import type { Env, MenuItem, NewOrderItemInput, Order, OrderStatus } from "../types";
 import { buildUpiUri, renderQrSvg } from "../qr";
 import { attachItems, getOrderWithItems } from "../orderHelpers";
@@ -26,26 +27,32 @@ orderRoutes.get("/:id", async (c) => {
 });
 
 // POST /api/orders — create a new order from a cart of one or more menu items (status: pending_payment)
+// Each line's rate/unit is set by staff in the UI (auto-filled from the menu item, then editable),
+// so lines are kept separate rather than merged — the same dish can appear twice as, say, a Half and a Full.
 orderRoutes.post("/", async (c) => {
   const body = await c.req.json<{ customer_name?: string; items: NewOrderItemInput[] }>();
   const { customer_name, items } = body;
 
   if (!Array.isArray(items) || items.length === 0) {
-    return c.json({ error: "items must be a non-empty array of { menu_item_id, quantity }" }, 400);
+    return c.json({ error: "items must be a non-empty array of { menu_item_id, quantity, rate, unit }" }, 400);
   }
   for (const line of items) {
-    if (!Number.isInteger(line.menu_item_id) || !Number.isInteger(line.quantity) || line.quantity < 1) {
-      return c.json({ error: "Each item needs an integer menu_item_id and a positive integer quantity" }, 400);
+    if (
+      !Number.isInteger(line.menu_item_id) ||
+      !Number.isInteger(line.quantity) ||
+      line.quantity < 1 ||
+      !Number.isFinite(line.rate) ||
+      line.rate <= 0 ||
+      !ORDER_UNITS.includes(line.unit)
+    ) {
+      return c.json(
+        { error: "Each item needs menu_item_id, a positive integer quantity, a positive rate, and unit of half/full/gram" },
+        400
+      );
     }
   }
 
-  // Merge duplicate menu_item_id entries (e.g. added twice via search) into one line.
-  const quantityByMenuItemId = new Map<number, number>();
-  for (const line of items) {
-    quantityByMenuItemId.set(line.menu_item_id, (quantityByMenuItemId.get(line.menu_item_id) ?? 0) + line.quantity);
-  }
-  const menuItemIds = [...quantityByMenuItemId.keys()];
-
+  const menuItemIds = [...new Set(items.map((line) => line.menu_item_id))];
   const placeholders = menuItemIds.map((_, i) => `?${i + 1}`).join(",");
   const { results: menuItems } = await c.env.DB.prepare(
     `SELECT * FROM menu_items WHERE availability = 1 AND id IN (${placeholders})`
@@ -57,7 +64,7 @@ orderRoutes.post("/", async (c) => {
     return c.json({ error: "One or more menu items were not found or are unavailable" }, 404);
   }
 
-  const total_amount = menuItems.reduce((sum, item) => sum + item.rate * (quantityByMenuItemId.get(item.id) ?? 0), 0);
+  const total_amount = items.reduce((sum, line) => sum + Math.round(line.rate) * line.quantity, 0);
 
   const insertOrder = await c.env.DB.prepare(
     `INSERT INTO orders (customer_name, total_amount, status) VALUES (?1, ?2, 'pending_payment')`
@@ -66,13 +73,10 @@ orderRoutes.post("/", async (c) => {
     .run();
   const orderId = insertOrder.meta.last_row_id;
 
-  const itemInserts = menuItems.map((item) =>
-    c.env.DB.prepare(`INSERT INTO order_items (order_id, menu_item_id, quantity, rate) VALUES (?1, ?2, ?3, ?4)`).bind(
-      orderId,
-      item.id,
-      quantityByMenuItemId.get(item.id),
-      item.rate
-    )
+  const itemInserts = items.map((line) =>
+    c.env.DB.prepare(
+      `INSERT INTO order_items (order_id, menu_item_id, quantity, rate, unit) VALUES (?1, ?2, ?3, ?4, ?5)`
+    ).bind(orderId, line.menu_item_id, line.quantity, Math.round(line.rate), line.unit)
   );
   await c.env.DB.batch(itemInserts);
 

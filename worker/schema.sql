@@ -19,14 +19,16 @@ CREATE TABLE IF NOT EXISTS orders (
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
--- One row per menu item within an order. `rate` snapshots the item's price
--- at order time so later rate changes don't rewrite historical order totals.
+-- One row per menu item within an order. `rate` starts auto-filled from the
+-- menu item's price but staff can edit it per line (e.g. for a half portion
+-- or a gram-based price); `unit` records what that rate is for.
 CREATE TABLE IF NOT EXISTS order_items (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   order_id INTEGER NOT NULL,
   menu_item_id INTEGER NOT NULL,
   quantity INTEGER NOT NULL,
   rate INTEGER NOT NULL,
+  unit TEXT NOT NULL DEFAULT 'full', -- half, full, gram
   FOREIGN KEY(order_id) REFERENCES orders(id),
   FOREIGN KEY(menu_item_id) REFERENCES menu_items(id)
 );

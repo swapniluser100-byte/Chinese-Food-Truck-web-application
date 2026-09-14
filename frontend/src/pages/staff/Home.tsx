@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../../api";
 import type { MenuItem } from "../../types";
@@ -7,7 +7,7 @@ import { MenuCard } from "../../components/MenuCard";
 import { TopBar } from "../../components/TopBar";
 
 export function StaffHome() {
-  const [topItems, setTopItems] = useState<MenuItem[]>([]);
+  const [menu, setMenu] = useState<MenuItem[]>([]);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -15,8 +15,8 @@ export function StaffHome() {
 
   useEffect(() => {
     api
-      .getTopMenu()
-      .then((r) => setTopItems(r.items))
+      .getMenu()
+      .then((r) => setMenu(r.items))
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
   }, []);
@@ -35,6 +35,16 @@ export function StaffHome() {
     }, 200);
     return () => clearTimeout(handle);
   }, [query]);
+
+  const byCategory = useMemo(() => {
+    const groups = new Map<string, MenuItem[]>();
+    for (const item of menu) {
+      const list = groups.get(item.category) ?? [];
+      list.push(item);
+      groups.set(item.category, list);
+    }
+    return [...groups.entries()];
+  }, [menu]);
 
   return (
     <div className="pb-8">
@@ -69,15 +79,19 @@ export function StaffHome() {
           ))}
         </div>
       ) : (
-        <div className="px-4">
-          <h2 className="font-semibold text-neutral-600 mb-2">Top Items</h2>
+        <div className="px-4 space-y-5">
           {loading && <p className="text-neutral-500 text-sm">Loading…</p>}
           {error && <p className="text-red-600 text-sm">{error}</p>}
-          <div className="grid grid-cols-4 gap-2">
-            {topItems.map((item) => (
-              <MenuButton key={item.id} item={item} />
-            ))}
-          </div>
+          {byCategory.map(([category, items]) => (
+            <div key={category}>
+              <h2 className="font-semibold text-neutral-600 mb-2">{category}</h2>
+              <div className="grid grid-cols-4 gap-2">
+                {items.map((item) => (
+                  <MenuButton key={item.id} item={item} />
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
       )}
 

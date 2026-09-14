@@ -1,13 +1,21 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { api } from "../../api";
-import type { MenuItem, OrderWithItems } from "../../types";
+import type { MenuItem, OrderUnit, OrderWithItems } from "../../types";
+import { ORDER_UNITS } from "../../types";
 import { MenuImage } from "../../components/MenuImage";
 import { TopBar } from "../../components/TopBar";
 
 interface CartLine {
+  lineId: string;
   item: MenuItem;
   quantity: number;
+  unit: OrderUnit;
+  rate: number; // auto-filled from item.rate, editable by staff
+}
+
+function newLine(item: MenuItem): CartLine {
+  return { lineId: crypto.randomUUID(), item, quantity: 1, unit: "full", rate: item.rate };
 }
 
 export function StaffOrder() {
@@ -33,7 +41,7 @@ export function StaffOrder() {
     seeded.current = true;
     api
       .getMenuItem(id)
-      .then((r) => setCart([{ item: r.item, quantity: 1 }]))
+      .then((r) => setCart([newLine(r.item)]))
       .catch((e) => setError(e.message));
   }, [menuItemId]);
 
@@ -53,28 +61,30 @@ export function StaffOrder() {
   }, [query]);
 
   function addToCart(item: MenuItem) {
-    setCart((prev) => {
-      const existing = prev.find((line) => line.item.id === item.id);
-      if (existing) {
-        return prev.map((line) => (line.item.id === item.id ? { ...line, quantity: line.quantity + 1 } : line));
-      }
-      return [...prev, { item, quantity: 1 }];
-    });
+    setCart((prev) => [...prev, newLine(item)]);
     setQuery("");
     setResults([]);
   }
 
-  function setQuantity(itemId: number, quantity: number) {
+  function setQuantity(lineId: string, quantity: number) {
     setCart((prev) =>
-      quantity < 1 ? prev.filter((line) => line.item.id !== itemId) : prev.map((line) => (line.item.id === itemId ? { ...line, quantity } : line))
+      quantity < 1 ? prev.filter((line) => line.lineId !== lineId) : prev.map((line) => (line.lineId === lineId ? { ...line, quantity } : line))
     );
   }
 
-  function removeLine(itemId: number) {
-    setCart((prev) => prev.filter((line) => line.item.id !== itemId));
+  function setUnit(lineId: string, unit: OrderUnit) {
+    setCart((prev) => prev.map((line) => (line.lineId === lineId ? { ...line, unit } : line)));
   }
 
-  const cartTotal = cart.reduce((sum, line) => sum + line.item.rate * line.quantity, 0);
+  function setRate(lineId: string, rate: number) {
+    setCart((prev) => prev.map((line) => (line.lineId === lineId ? { ...line, rate } : line)));
+  }
+
+  function removeLine(lineId: string) {
+    setCart((prev) => prev.filter((line) => line.lineId !== lineId));
+  }
+
+  const cartTotal = cart.reduce((sum, line) => sum + line.rate * line.quantity, 0);
 
   async function handleSaveOrder() {
     if (cart.length === 0) return;
@@ -83,7 +93,7 @@ export function StaffOrder() {
     try {
       const { order } = await api.createOrder({
         customer_name: customerName.trim() || undefined,
-        items: cart.map((line) => ({ menu_item_id: line.item.id, quantity: line.quantity })),
+        items: cart.map((line) => ({ menu_item_id: line.item.id, quantity: line.quantity, rate: line.rate, unit: line.unit })),
       });
       setOrder(order);
     } catch (e) {
@@ -155,35 +165,67 @@ export function StaffOrder() {
             {cart.length > 0 && (
               <div className="space-y-2">
                 {cart.map((line) => (
-                  <div key={line.item.id} className="bg-white rounded-xl p-3 shadow-sm border border-neutral-200 flex items-center gap-3">
-                    <MenuImage
-                      imageRefId={line.item.image_ref_id}
-                      category={line.item.category}
-                      name={line.item.name}
-                      className="w-14 h-14 rounded-lg object-cover flex-shrink-0"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="font-medium truncate">{line.item.name}</div>
-                      <div className="text-xs text-neutral-500">₹{line.item.rate} each</div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <button
-                        className="tap-target w-8 h-8 rounded-full bg-neutral-200 text-lg font-bold"
-                        onClick={() => setQuantity(line.item.id, line.quantity - 1)}
-                      >
-                        −
-                      </button>
-                      <span className="w-6 text-center font-semibold">{line.quantity}</span>
-                      <button
-                        className="tap-target w-8 h-8 rounded-full bg-neutral-200 text-lg font-bold"
-                        onClick={() => setQuantity(line.item.id, line.quantity + 1)}
-                      >
-                        +
+                  <div key={line.lineId} className="bg-white rounded-xl p-3 shadow-sm border border-neutral-200 space-y-2">
+                    <div className="flex items-center gap-3">
+                      <MenuImage
+                        imageRefId={line.item.image_ref_id}
+                        category={line.item.category}
+                        name={line.item.name}
+                        className="w-14 h-14 rounded-lg object-cover flex-shrink-0"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium truncate">{line.item.name}</div>
+                        <div className="text-xs text-neutral-500">Menu price: ₹{line.item.rate}</div>
+                      </div>
+                      <button onClick={() => removeLine(line.lineId)} className="text-red-500 text-sm font-medium px-1 self-start">
+                        Remove
                       </button>
                     </div>
-                    <button onClick={() => removeLine(line.item.id)} className="text-red-500 text-sm font-medium px-1">
-                      Remove
-                    </button>
+
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <select
+                        value={line.unit}
+                        onChange={(e) => setUnit(line.lineId, e.target.value as OrderUnit)}
+                        className="px-2 py-2 rounded-lg border border-neutral-300 text-sm"
+                      >
+                        {ORDER_UNITS.map((u) => (
+                          <option key={u.value} value={u.value}>
+                            {u.label}
+                          </option>
+                        ))}
+                      </select>
+
+                      <div className="flex items-center gap-1 px-2 py-1.5 rounded-lg border border-neutral-300">
+                        <span className="text-neutral-500">₹</span>
+                        <input
+                          type="number"
+                          min={0}
+                          value={line.rate}
+                          onChange={(e) => setRate(line.lineId, Math.max(0, Number(e.target.value) || 0))}
+                          className="w-16 text-sm outline-none"
+                        />
+                      </div>
+
+                      <div className="flex items-center gap-2 ml-auto">
+                        <button
+                          className="tap-target w-8 h-8 rounded-full bg-neutral-200 text-lg font-bold"
+                          onClick={() => setQuantity(line.lineId, line.quantity - 1)}
+                        >
+                          −
+                        </button>
+                        <span className="w-6 text-center font-semibold">{line.quantity}</span>
+                        <button
+                          className="tap-target w-8 h-8 rounded-full bg-neutral-200 text-lg font-bold"
+                          onClick={() => setQuantity(line.lineId, line.quantity + 1)}
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="text-right text-sm font-semibold text-brand-600">
+                      Subtotal: ₹{line.rate * line.quantity}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -224,7 +266,8 @@ export function StaffOrder() {
                 {order.items.map((line) => (
                   <div key={line.id} className="flex justify-between text-sm border-b border-neutral-100 py-1 last:border-0">
                     <span>
-                      {line.quantity} × {line.item_name}
+                      {line.quantity} × {line.item_name}{" "}
+                      <span className="text-neutral-400">({ORDER_UNITS.find((u) => u.value === line.unit)?.label ?? line.unit})</span>
                     </span>
                     <span className="font-medium">₹{line.quantity * line.rate}</span>
                   </div>

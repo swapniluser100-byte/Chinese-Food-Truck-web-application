@@ -141,7 +141,7 @@ adminRoutes.get("/summary", async (c) => {
 adminRoutes.get("/export", async (c) => {
   const date = c.req.query("date") ?? new Date().toISOString().slice(0, 10);
   const { results } = await c.env.DB.prepare(
-    `SELECT o.id, o.customer_name, m.name as item_name, oi.quantity, oi.rate,
+    `SELECT o.id, o.customer_name, m.name as item_name, oi.quantity, oi.unit, oi.rate,
             (oi.quantity * oi.rate) as line_total, o.total_amount, o.status, o.created_at
      FROM order_items oi
      JOIN orders o ON o.id = oi.order_id
@@ -155,6 +155,7 @@ adminRoutes.get("/export", async (c) => {
       customer_name: string | null;
       item_name: string;
       quantity: number;
+      unit: string;
       rate: number;
       line_total: number;
       total_amount: number;
@@ -162,10 +163,10 @@ adminRoutes.get("/export", async (c) => {
       created_at: string;
     }>();
 
-  const header = "Order ID,Customer Name,Item,Quantity,Line Total,Order Total,Status,Created At";
+  const header = "Order ID,Customer Name,Item,Unit,Quantity,Line Total,Order Total,Status,Created At";
   const escapeCsv = (v: string) => `"${v.replace(/"/g, '""')}"`;
   const rows = results.map((r) =>
-    [r.id, escapeCsv(r.customer_name ?? ""), escapeCsv(r.item_name), r.quantity, r.line_total, r.total_amount, r.status, r.created_at].join(",")
+    [r.id, escapeCsv(r.customer_name ?? ""), escapeCsv(r.item_name), r.unit, r.quantity, r.line_total, r.total_amount, r.status, r.created_at].join(",")
   );
   const csv = [header, ...rows].join("\n");
 

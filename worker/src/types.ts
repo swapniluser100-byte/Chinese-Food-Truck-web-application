@@ -1,4 +1,6 @@
 export type OrderStatus = "pending_payment" | "in_kitchen" | "ready" | "completed";
+export type OrderUnit = "half" | "full" | "gram";
+export const ORDER_UNITS: OrderUnit[] = ["half", "full", "gram"];
 
 export interface Env {
   DB: D1Database;
@@ -31,7 +33,8 @@ export interface OrderItem {
   order_id: number;
   menu_item_id: number;
   quantity: number;
-  rate: number; // price per unit, snapshotted at order time
+  rate: number; // auto-filled from the menu item, editable by staff per line
+  unit: OrderUnit;
 }
 
 export interface OrderItemWithMenu extends OrderItem {
@@ -47,4 +50,6 @@ export interface OrderWithItems extends Order {
 export interface NewOrderItemInput {
   menu_item_id: number;
   quantity: number;
+  rate: number;
+  unit: OrderUnit;
 }

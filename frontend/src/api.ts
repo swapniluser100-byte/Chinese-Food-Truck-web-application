@@ -1,4 +1,4 @@
-import type { MenuItem, OrderWithItems } from "./types";
+import type { MenuItem, OrderUnit, OrderWithItems } from "./types";
 
 const BASE = (import.meta.env.VITE_API_BASE ?? "").replace(/\/$/, "");
 
@@ -34,8 +34,10 @@ export const api = {
   getMenuItem: (id: number) => request<{ item: MenuItem }>(`/api/menu/${id}`),
 
   // Orders (staff)
-  createOrder: (payload: { customer_name?: string; items: { menu_item_id: number; quantity: number }[] }) =>
-    request<{ order: OrderWithItems }>("/api/orders", { method: "POST", body: JSON.stringify(payload) }),
+  createOrder: (payload: {
+    customer_name?: string;
+    items: { menu_item_id: number; quantity: number; rate: number; unit: OrderUnit }[];
+  }) => request<{ order: OrderWithItems }>("/api/orders", { method: "POST", body: JSON.stringify(payload) }),
   getOrder: (id: number) => request<{ order: OrderWithItems }>(`/api/orders/${id}`),
   listOrders: (status?: string) =>
     request<{ orders: OrderWithItems[] }>(`/api/orders${status ? `?status=${status}` : ""}`),
