@@ -1,7 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { api } from "../../api";
 import type { MenuItem } from "../../types";
 import { MenuImage } from "../../components/MenuImage";
+
+const ADD_NEW_CATEGORY = "__add_new_category__";
 
 const EMPTY_FORM = {
   name: "",
@@ -20,7 +22,13 @@ export function MenuManager() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [addingCategory, setAddingCategory] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const categories = useMemo(
+    () => [...new Set(items.map((i) => i.category))].sort((a, b) => a.localeCompare(b)),
+    [items]
+  );
 
   async function load() {
     try {
@@ -37,6 +45,7 @@ export function MenuManager() {
 
   function startEdit(item: MenuItem) {
     setEditingId(item.id);
+    setAddingCategory(false);
     setForm({
       name: item.name,
       category: item.category,
@@ -51,8 +60,18 @@ export function MenuManager() {
 
   function resetForm() {
     setEditingId(null);
+    setAddingCategory(false);
     setForm(EMPTY_FORM);
     if (fileInputRef.current) fileInputRef.current.value = "";
+  }
+
+  function handleCategorySelect(value: string) {
+    if (value === ADD_NEW_CATEGORY) {
+      setAddingCategory(true);
+      setForm((f) => ({ ...f, category: "" }));
+    } else {
+      setForm((f) => ({ ...f, category: value }));
+    }
   }
 
   async function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -138,13 +157,47 @@ export function MenuManager() {
             onChange={(e) => setForm({ ...form, name: e.target.value })}
             className="col-span-2 px-3 py-2 rounded-lg border border-neutral-300"
           />
-          <input
-            required
-            placeholder="Category (e.g. Rice)"
-            value={form.category}
-            onChange={(e) => setForm({ ...form, category: e.target.value })}
-            className="col-span-2 px-3 py-2 rounded-lg border border-neutral-300"
-          />
+          {addingCategory || categories.length === 0 ? (
+            <div className="col-span-2 flex gap-2">
+              <input
+                required
+                autoFocus
+                placeholder="New category name"
+                value={form.category}
+                onChange={(e) => setForm({ ...form, category: e.target.value })}
+                className="flex-1 px-3 py-2 rounded-lg border border-neutral-300"
+              />
+              {categories.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAddingCategory(false);
+                    setForm((f) => ({ ...f, category: categories[0] }));
+                  }}
+                  className="px-3 py-2 rounded-lg bg-neutral-200 text-sm"
+                >
+                  Cancel
+                </button>
+              )}
+            </div>
+          ) : (
+            <select
+              required
+              value={form.category}
+              onChange={(e) => handleCategorySelect(e.target.value)}
+              className="col-span-2 px-3 py-2 rounded-lg border border-neutral-300"
+            >
+              <option value="" disabled>
+                Select category
+              </option>
+              {categories.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+              <option value={ADD_NEW_CATEGORY}>+ Add new category</option>
+            </select>
+          )}
           <input
             required
             type="number"

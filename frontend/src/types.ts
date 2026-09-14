@@ -45,4 +45,6 @@ export interface Settings {
   name: string;
   slogan: string | null;
   logo_data_url: string | null;
+  menu_columns: number;
+  kitchen_columns: number;
 }

@@ -215,9 +215,24 @@ adminRoutes.get("/export", async (c) => {
 
 const MAX_LOGO_DATA_URL_LENGTH = 1_500_000; // ~1.1MB of raw image data once base64-decoded
 
-// PUT /api/admin/settings — update app name / slogan / logo
+const MIN_COLUMNS = 1;
+const MAX_COLUMNS = 6;
+
+function parseColumns(value: unknown, fallback: number): number | null {
+  if (value === undefined) return fallback;
+  if (!Number.isInteger(value) || (value as number) < MIN_COLUMNS || (value as number) > MAX_COLUMNS) return null;
+  return value as number;
+}
+
+// PUT /api/admin/settings — update app name / slogan / logo / grid columns
 adminRoutes.put("/settings", async (c) => {
-  const body = await c.req.json<{ name?: string; slogan?: string | null; logo_data_url?: string | null }>();
+  const body = await c.req.json<{
+    name?: string;
+    slogan?: string | null;
+    logo_data_url?: string | null;
+    menu_columns?: number;
+    kitchen_columns?: number;
+  }>();
   const name = (body.name ?? "").trim();
   if (!name) return c.json({ error: "name is required" }, 400);
 
@@ -230,12 +245,23 @@ adminRoutes.put("/settings", async (c) => {
     return c.json({ error: "logo_data_url must be an image data URL" }, 400);
   }
 
+  const existing = await c.env.DB.prepare("SELECT menu_columns, kitchen_columns FROM settings WHERE id = 1").first<{
+    menu_columns: number;
+    kitchen_columns: number;
+  }>();
+  const menu_columns = parseColumns(body.menu_columns, existing?.menu_columns ?? 4);
+  const kitchen_columns = parseColumns(body.kitchen_columns, existing?.kitchen_columns ?? 2);
+  if (menu_columns === null || kitchen_columns === null) {
+    return c.json({ error: `menu_columns and kitchen_columns must be integers between ${MIN_COLUMNS} and ${MAX_COLUMNS}` }, 400);
+  }
+
   await c.env.DB.prepare(
-    `INSERT INTO settings (id, name, slogan, logo_data_url) VALUES (1, ?1, ?2, ?3)
-     ON CONFLICT(id) DO UPDATE SET name = excluded.name, slogan = excluded.slogan, logo_data_url = excluded.logo_data_url`
+    `INSERT INTO settings (id, name, slogan, logo_data_url, menu_columns, kitchen_columns) VALUES (1, ?1, ?2, ?3, ?4, ?5)
+     ON CONFLICT(id) DO UPDATE SET name = excluded.name, slogan = excluded.slogan, logo_data_url = excluded.logo_data_url,
+       menu_columns = excluded.menu_columns, kitchen_columns = excluded.kitchen_columns`
   )
-    .bind(name, slogan, logo_data_url)
+    .bind(name, slogan, logo_data_url, menu_columns, kitchen_columns)
     .run();
 
-  return c.json({ settings: { name, slogan, logo_data_url } });
+  return c.json({ settings: { name, slogan, logo_data_url, menu_columns, kitchen_columns } });
 });

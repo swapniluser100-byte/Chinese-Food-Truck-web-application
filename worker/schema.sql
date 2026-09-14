@@ -39,13 +39,17 @@ CREATE TABLE IF NOT EXISTS order_items (
   FOREIGN KEY(menu_item_id) REFERENCES menu_items(id)
 );
 
--- Single-row app branding: name, slogan, and logo (stored as a data: URL —
--- there's no object storage wired up, and a small logo fits fine in D1).
+-- Single-row app branding and layout settings. Logo is stored as a data: URL
+-- — there's no object storage wired up for it, and a small logo fits fine in
+-- D1. menu_columns/kitchen_columns control tiles-per-row on the Staff Home
+-- menu grid and the Kitchen board, respectively.
 CREATE TABLE IF NOT EXISTS settings (
   id INTEGER PRIMARY KEY CHECK (id = 1),
   name TEXT NOT NULL DEFAULT 'Chinese Food Truck',
   slogan TEXT,
-  logo_data_url TEXT
+  logo_data_url TEXT,
+  menu_columns INTEGER NOT NULL DEFAULT 4,
+  kitchen_columns INTEGER NOT NULL DEFAULT 2
 );
 
 CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status);

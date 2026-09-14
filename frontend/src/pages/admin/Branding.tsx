@@ -9,6 +9,8 @@ export function AdminBranding() {
   const [name, setName] = useState(settings.name);
   const [slogan, setSlogan] = useState(settings.slogan ?? "");
   const [logoDataUrl, setLogoDataUrl] = useState<string | null>(settings.logo_data_url);
+  const [menuColumns, setMenuColumns] = useState(settings.menu_columns);
+  const [kitchenColumns, setKitchenColumns] = useState(settings.kitchen_columns);
   const [error, setError] = useState("");
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -18,6 +20,8 @@ export function AdminBranding() {
     setName(settings.name);
     setSlogan(settings.slogan ?? "");
     setLogoDataUrl(settings.logo_data_url);
+    setMenuColumns(settings.menu_columns);
+    setKitchenColumns(settings.kitchen_columns);
   }, [settings]);
 
   function handleLogoChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -49,7 +53,13 @@ export function AdminBranding() {
     setError("");
     setSaved(false);
     try {
-      await api.adminUpdateSettings({ name: name.trim(), slogan: slogan.trim() || null, logo_data_url: logoDataUrl });
+      await api.adminUpdateSettings({
+        name: name.trim(),
+        slogan: slogan.trim() || null,
+        logo_data_url: logoDataUrl,
+        menu_columns: menuColumns,
+        kitchen_columns: kitchenColumns,
+      });
       await refresh();
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
@@ -106,6 +116,37 @@ export function AdminBranding() {
             </div>
           </div>
           <p className="text-xs text-neutral-400 mt-1">Square images work best. Max 1MB.</p>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="block text-sm font-medium mb-1">Home tiles per row</label>
+            <select
+              value={menuColumns}
+              onChange={(e) => setMenuColumns(Number(e.target.value))}
+              className="w-full px-3 py-2 rounded-lg border border-neutral-300"
+            >
+              {[1, 2, 3, 4, 5, 6].map((n) => (
+                <option key={n} value={n}>
+                  {n}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Kitchen tiles per row</label>
+            <select
+              value={kitchenColumns}
+              onChange={(e) => setKitchenColumns(Number(e.target.value))}
+              className="w-full px-3 py-2 rounded-lg border border-neutral-300"
+            >
+              {[1, 2, 3, 4, 5, 6].map((n) => (
+                <option key={n} value={n}>
+                  {n}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
         {error && <p className="text-red-600 text-sm">{error}</p>}

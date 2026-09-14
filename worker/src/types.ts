@@ -64,4 +64,6 @@ export interface Settings {
   name: string;
   slogan: string | null;
   logo_data_url: string | null;
+  menu_columns: number; // tiles per row on the Staff Home menu grid
+  kitchen_columns: number; // tiles per row on the Kitchen board
 }

@@ -5,8 +5,10 @@ import type { MenuItem } from "../../types";
 import { MenuButton } from "../../components/MenuButton";
 import { MenuCard } from "../../components/MenuCard";
 import { TopBar } from "../../components/TopBar";
+import { useBranding } from "../../BrandingContext";
 
 export function StaffHome() {
+  const { settings } = useBranding();
   const [menu, setMenu] = useState<MenuItem[]>([]);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<MenuItem[]>([]);
@@ -85,7 +87,10 @@ export function StaffHome() {
           {byCategory.map(([category, items]) => (
             <div key={category}>
               <h2 className="font-semibold text-neutral-600 mb-2">{category}</h2>
-              <div className="grid grid-cols-4 gap-2">
+              <div
+                className="grid gap-2"
+                style={{ gridTemplateColumns: `repeat(${settings.menu_columns}, minmax(0, 1fr))` }}
+              >
                 {items.map((item) => (
                   <MenuButton key={item.id} item={item} />
                 ))}

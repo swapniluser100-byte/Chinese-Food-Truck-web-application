@@ -4,8 +4,10 @@ import type { OrderWithItems } from "../../types";
 import { formatOrderLine } from "../../orderSummary";
 import { StatusBadge } from "../../components/StatusBadge";
 import { TopBar } from "../../components/TopBar";
+import { useBranding } from "../../BrandingContext";
 
 export function Kitchen() {
+  const { settings } = useBranding();
   const [orders, setOrders] = useState<OrderWithItems[]>([]);
   const [error, setError] = useState("");
   const [busyId, setBusyId] = useState<number | null>(null);
@@ -57,7 +59,7 @@ export function Kitchen() {
         {error && <p className="text-red-600 text-sm mb-3">{error}</p>}
         {orders.length === 0 && <p className="text-neutral-500 text-sm">No orders in the kitchen right now.</p>}
 
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid gap-3" style={{ gridTemplateColumns: `repeat(${settings.kitchen_columns}, minmax(0, 1fr))` }}>
           {orders.map((order) => (
             <div key={order.id} className="bg-white rounded-2xl p-3 shadow-sm border border-neutral-200 flex flex-col">
               <div className="flex items-center justify-between mb-1">

@@ -2,8 +2,14 @@ import { createContext, useCallback, useContext, useEffect, useState, type React
 import { api } from "./api";
 import type { Settings } from "./types";
 
-const DEFAULT_SETTINGS: Settings = { name: "Chinese Food Truck", slogan: null, logo_data_url: null };
-const STORAGE_KEY = "branding_cache_v1";
+const DEFAULT_SETTINGS: Settings = {
+  name: "Chinese Food Truck",
+  slogan: null,
+  logo_data_url: null,
+  menu_columns: 4,
+  kitchen_columns: 2,
+};
+const STORAGE_KEY = "branding_cache_v2";
 
 interface BrandingContextValue {
   settings: Settings;
@@ -15,7 +21,7 @@ const BrandingContext = createContext<BrandingContextValue>({ settings: DEFAULT_
 function readCache(): Settings | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? (JSON.parse(raw) as Settings) : null;
+    return raw ? { ...DEFAULT_SETTINGS, ...(JSON.parse(raw) as Settings) } : null;
   } catch {
     return null;
   }
