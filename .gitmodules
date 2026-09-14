@@ -1,0 +1,3 @@
+[submodule "frontend/src/reusable-components"]
+	path = frontend/src/reusable-components
+	url = https://github.com/sitepragati-arch/Reusable-Components.git

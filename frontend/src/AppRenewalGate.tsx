@@ -1,10 +1,18 @@
 import type { ReactNode } from "react";
-import { RenewalGate } from "./renewal-gate/RenewalGate";
+import { RenewalGate } from "./reusable-components/renewal-gate/RenewalGate";
 import { useBranding } from "./BrandingContext";
 
 // Bridges this app's own branding (logo/name, from BrandingContext) into the
 // portable, app-agnostic <RenewalGate>. Any other app reuses RenewalGate
-// directly with its own values — see renewal-gate/README.md.
+// directly with its own values — see reusable-components/renewal-gate/README.md.
+//
+// `reusable-components` is a git submodule pointing at
+// github.com/sitepragati-arch/Reusable-Components, pinned to a specific
+// commit. To update to a newer version of the component:
+//   git submodule update --remote frontend/src/reusable-components
+//   git add frontend/src/reusable-components && git commit -m "..."
+// A fresh clone of this repo needs `git submodule update --init --recursive`
+// once before `npm run dev`/`build` will find these files.
 //
 // The service's deployed name deliberately avoids words like "renewal" or
 // "license" in its subdomain — testing showed that name shape gets silently
