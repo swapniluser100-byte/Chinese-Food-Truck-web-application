@@ -42,15 +42,21 @@ export function StaffHome() {
         title="Order Taking"
         tabs={[
           { to: "/staff", label: "Menu" },
-          { to: "/staff/orders", label: "Active Orders", marathi: "ऑर्डर्स" },
+          { to: "/staff/orders", label: "Active Orders" },
         ]}
       />
 
-      <div className="p-4">
+      <div className="p-4 space-y-3">
+        <Link
+          to="/staff/order"
+          className="tap-target block w-full text-center py-3 rounded-xl bg-neutral-900 text-white font-semibold shadow"
+        >
+          + Start New Order (add multiple items)
+        </Link>
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search menu (name or category) / मेनू शोधा"
+          placeholder="Search menu (name or category)"
           className="w-full px-4 py-3 rounded-xl border border-neutral-300 text-base"
         />
       </div>
@@ -64,10 +70,10 @@ export function StaffHome() {
         </div>
       ) : (
         <div className="px-4">
-          <h2 className="font-semibold text-neutral-600 mb-2">Top Items / लोकप्रिय पदार्थ</h2>
+          <h2 className="font-semibold text-neutral-600 mb-2">Top Items</h2>
           {loading && <p className="text-neutral-500 text-sm">Loading…</p>}
           {error && <p className="text-red-600 text-sm">{error}</p>}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-4 gap-2">
             {topItems.map((item) => (
               <MenuButton key={item.id} item={item} />
             ))}

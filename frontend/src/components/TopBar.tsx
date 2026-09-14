@@ -3,7 +3,6 @@ import { Link, useLocation } from "react-router-dom";
 interface Tab {
   to: string;
   label: string;
-  marathi?: string;
 }
 
 export function TopBar({ title, tabs }: { title: string; tabs?: Tab[] }) {
@@ -26,7 +25,6 @@ export function TopBar({ title, tabs }: { title: string; tabs?: Tab[] }) {
                 }`}
               >
                 {tab.label}
-                {tab.marathi && <span className="ml-1 opacity-80">({tab.marathi})</span>}
               </Link>
             );
           })}
