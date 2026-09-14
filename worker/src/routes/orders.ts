@@ -30,8 +30,8 @@ orderRoutes.get("/:id", async (c) => {
 // Each line's rate/unit is set by staff in the UI (auto-filled from the menu item, then editable),
 // so lines are kept separate rather than merged — the same dish can appear twice as, say, a Half and a Full.
 orderRoutes.post("/", async (c) => {
-  const body = await c.req.json<{ customer_name?: string; items: NewOrderItemInput[] }>();
-  const { customer_name, items } = body;
+  const body = await c.req.json<{ customer_name?: string; instructions?: string; items: NewOrderItemInput[] }>();
+  const { customer_name, instructions, items } = body;
 
   if (!Array.isArray(items) || items.length === 0) {
     return c.json({ error: "items must be a non-empty array of { menu_item_id, quantity, rate, unit }" }, 400);
@@ -70,9 +70,9 @@ orderRoutes.post("/", async (c) => {
   const total_amount = items.reduce((sum, line) => sum + Math.round(line.rate) * line.quantity, 0);
 
   const insertOrder = await c.env.DB.prepare(
-    `INSERT INTO orders (customer_name, total_amount, status) VALUES (?1, ?2, 'pending_payment')`
+    `INSERT INTO orders (customer_name, instructions, total_amount, status) VALUES (?1, ?2, ?3, 'pending_payment')`
   )
-    .bind(customer_name?.trim() || null, total_amount)
+    .bind(customer_name?.trim() || null, instructions?.trim() || null, total_amount)
     .run();
   const orderId = insertOrder.meta.last_row_id;
 

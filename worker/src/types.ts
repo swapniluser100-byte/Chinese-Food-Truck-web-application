@@ -1,9 +1,10 @@
-export type OrderStatus = "pending_payment" | "in_kitchen" | "ready" | "completed";
+export type OrderStatus = "pending_payment" | "in_kitchen" | "in_progress" | "ready" | "completed";
 export type OrderUnit = "half" | "full" | "gram";
 export const ORDER_UNITS: OrderUnit[] = ["half", "full", "gram"];
 
 export interface Env {
   DB: D1Database;
+  MENU_IMAGES: R2Bucket;
   ADMIN_PASSWORD: string;
   TOKEN_SECRET: string;
   UPI_ID: string;
@@ -14,15 +15,17 @@ export interface MenuItem {
   id: number;
   name: string;
   category: string;
-  rate: number;
+  rate: number; // price for a "full" order
+  rate_half: number | null; // optional price for a "half" order; falls back to `rate` when unset
   availability: number; // 0 | 1
   top_item: number; // 0 | 1
-  image_ref_id: string;
+  image_ref_id: string; // R2 object key, served via GET /api/images/:key
 }
 
 export interface Order {
   id: number;
   customer_name: string | null;
+  instructions: string | null;
   total_amount: number;
   status: OrderStatus;
   created_at: string;

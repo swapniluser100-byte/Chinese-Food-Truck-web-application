@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { api } from "../api";
 
 const CATEGORY_EMOJI: Record<string, string> = {
   Rice: "🍚",
@@ -21,11 +22,13 @@ interface Props {
   className?: string;
 }
 
-// Real photos, when present, live at /menu-images/{image_ref_id}.jpg (see README).
-// Until a photo is uploaded for an item, we render a category-colored placeholder
-// so every menu item always has a visible "image" on screen.
+// Real photos live in R2, served via GET /api/images/{image_ref_id}. Until a
+// photo is uploaded for an item, we render a category-colored placeholder so
+// every menu item always has a visible "image" on screen.
 export function MenuImage({ imageRefId, category, name, className }: Props) {
-  const [failed, setFailed] = useState(false);
+  const [failed, setFailed] = useState(!imageRefId);
+  useEffect(() => setFailed(!imageRefId), [imageRefId]);
+
   const emoji = CATEGORY_EMOJI[category] ?? "🥡";
   const gradient = CATEGORY_COLOR[category] ?? "from-neutral-200 to-neutral-400";
 
@@ -41,12 +44,5 @@ export function MenuImage({ imageRefId, category, name, className }: Props) {
     );
   }
 
-  return (
-    <img
-      src={`/menu-images/${imageRefId}.jpg`}
-      alt={name}
-      className={className}
-      onError={() => setFailed(true)}
-    />
-  );
+  return <img src={api.imageUrl(imageRefId)} alt={name} className={className} onError={() => setFailed(true)} />;
 }

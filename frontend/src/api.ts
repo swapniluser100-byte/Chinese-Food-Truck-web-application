@@ -36,6 +36,7 @@ export const api = {
   // Orders (staff)
   createOrder: (payload: {
     customer_name?: string;
+    instructions?: string;
     items: { menu_item_id: number; quantity: number; rate: number; unit: OrderUnit; grams?: number }[];
   }) => request<{ order: OrderWithItems }>("/api/orders", { method: "POST", body: JSON.stringify(payload) }),
   getOrder: (id: number) => request<{ order: OrderWithItems }>(`/api/orders/${id}`),
@@ -44,9 +45,11 @@ export const api = {
   startPreparation: (id: number) => request<{ order: OrderWithItems }>(`/api/orders/${id}/start-preparation`, { method: "POST" }),
   completeOrder: (id: number) => request<{ order: OrderWithItems }>(`/api/orders/${id}/complete`, { method: "POST" }),
   qrUrl: (id: number) => `${BASE}/api/orders/${id}/qr`,
+  imageUrl: (key: string) => `${BASE}/api/images/${key}`,
 
   // Kitchen
   getKitchenOrders: () => request<{ orders: OrderWithItems[] }>("/api/kitchen/orders"),
+  startInKitchen: (id: number) => request<{ order: OrderWithItems }>(`/api/kitchen/orders/${id}/start`, { method: "POST" }),
   markReady: (id: number) => request<{ order: OrderWithItems }>(`/api/kitchen/orders/${id}/ready`, { method: "POST" }),
 
   // Admin
@@ -57,6 +60,28 @@ export const api = {
   adminUpdateMenuItem: (id: number, item: Partial<MenuItem>) =>
     request<{ item: MenuItem }>(`/api/admin/menu/${id}`, { method: "PUT", body: JSON.stringify(item) }, true),
   adminDeleteMenuItem: (id: number) => request<{ ok: boolean }>(`/api/admin/menu/${id}`, { method: "DELETE" }, true),
+  adminUploadImage: async (file: File): Promise<{ key: string }> => {
+    const token = adminToken();
+    const res = await fetch(`${BASE}/api/admin/images`, {
+      method: "POST",
+      headers: {
+        "Content-Type": file.type,
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: file,
+    });
+    if (!res.ok) {
+      let message = `Upload failed (${res.status})`;
+      try {
+        const body = await res.json();
+        if (body?.error) message = body.error;
+      } catch {
+        // ignore
+      }
+      throw new Error(message);
+    }
+    return res.json();
+  },
   adminListOrders: (params: { date?: string; status?: string } = {}) => {
     const entries = Object.entries(params).filter(([, v]) => v !== undefined && v !== "") as [string, string][];
     const qs = new URLSearchParams(entries).toString();

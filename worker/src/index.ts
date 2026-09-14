@@ -6,6 +6,7 @@ import { orderRoutes } from "./routes/orders";
 import { kitchenRoutes } from "./routes/kitchen";
 import { adminRoutes } from "./routes/admin";
 import { settingsRoutes } from "./routes/settings";
+import { imageRoutes } from "./routes/images";
 
 const app = new Hono<{ Bindings: Env }>();
 
@@ -25,6 +26,7 @@ app.route("/api/orders", orderRoutes);
 app.route("/api/kitchen", kitchenRoutes);
 app.route("/api/admin", adminRoutes);
 app.route("/api/settings", settingsRoutes);
+app.route("/api/images", imageRoutes);
 
 app.notFound((c) => c.json({ error: "Not found" }, 404));
 

@@ -28,15 +28,15 @@ adminRoutes.get("/menu", async (c) => {
 
 adminRoutes.post("/menu", async (c) => {
   const body = await c.req.json<Partial<MenuItem>>();
-  const { name, category, rate, availability = 1, top_item = 0, image_ref_id } = body;
+  const { name, category, rate, rate_half = null, availability = 1, top_item = 0, image_ref_id } = body;
   if (!name || !category || !Number.isFinite(rate) || !image_ref_id) {
     return c.json({ error: "name, category, rate, and image_ref_id are required" }, 400);
   }
   const result = await c.env.DB.prepare(
-    `INSERT INTO menu_items (name, category, rate, availability, top_item, image_ref_id)
-     VALUES (?1, ?2, ?3, ?4, ?5, ?6)`
+    `INSERT INTO menu_items (name, category, rate, rate_half, availability, top_item, image_ref_id)
+     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)`
   )
-    .bind(name, category, rate, availability ? 1 : 0, top_item ? 1 : 0, image_ref_id)
+    .bind(name, category, rate, Number.isFinite(rate_half) ? rate_half : null, availability ? 1 : 0, top_item ? 1 : 0, image_ref_id)
     .run();
   const item = await c.env.DB.prepare("SELECT * FROM menu_items WHERE id = ?1").bind(result.meta.last_row_id).first();
   return c.json({ item }, 201);
@@ -57,10 +57,19 @@ adminRoutes.put("/menu/:id", async (c) => {
   };
 
   await c.env.DB.prepare(
-    `UPDATE menu_items SET name = ?1, category = ?2, rate = ?3, availability = ?4, top_item = ?5, image_ref_id = ?6
-     WHERE id = ?7`
+    `UPDATE menu_items SET name = ?1, category = ?2, rate = ?3, rate_half = ?4, availability = ?5, top_item = ?6, image_ref_id = ?7
+     WHERE id = ?8`
   )
-    .bind(merged.name, merged.category, merged.rate, merged.availability, merged.top_item, merged.image_ref_id, id)
+    .bind(
+      merged.name,
+      merged.category,
+      merged.rate,
+      Number.isFinite(merged.rate_half) ? merged.rate_half : null,
+      merged.availability,
+      merged.top_item,
+      merged.image_ref_id,
+      id
+    )
     .run();
 
   const item = await c.env.DB.prepare("SELECT * FROM menu_items WHERE id = ?1").bind(id).first();
@@ -72,6 +81,31 @@ adminRoutes.delete("/menu/:id", async (c) => {
   if (!Number.isInteger(id)) return c.json({ error: "Invalid id" }, 400);
   await c.env.DB.prepare("DELETE FROM menu_items WHERE id = ?1").bind(id).run();
   return c.json({ ok: true });
+});
+
+// ---- Menu images (R2) ----
+
+const MAX_IMAGE_BYTES = 5_000_000; // 5MB
+const IMAGE_EXT_BY_MIME: Record<string, string> = {
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+  "image/gif": "gif",
+};
+
+// POST /api/admin/images — upload a menu photo to R2, returns { key } to store as image_ref_id
+adminRoutes.post("/images", async (c) => {
+  const contentType = c.req.header("Content-Type") || "";
+  const ext = IMAGE_EXT_BY_MIME[contentType];
+  if (!ext) return c.json({ error: "Unsupported image type — use JPEG, PNG, WEBP, or GIF" }, 400);
+
+  const body = await c.req.arrayBuffer();
+  if (body.byteLength === 0) return c.json({ error: "Empty file" }, 400);
+  if (body.byteLength > MAX_IMAGE_BYTES) return c.json({ error: "Image is too large (max 5MB)" }, 400);
+
+  const key = `${crypto.randomUUID()}.${ext}`;
+  await c.env.MENU_IMAGES.put(key, body, { httpMetadata: { contentType } });
+  return c.json({ key }, 201);
 });
 
 // ---- Orders ----

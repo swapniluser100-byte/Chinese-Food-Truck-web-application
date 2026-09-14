@@ -1,10 +1,14 @@
 -- Chinese Food Truck — D1 schema
 
+-- `image_ref_id` is an R2 object key (served via GET /api/images/:key), not a
+-- static frontend asset path. `rate_half` is optional; a half order falls
+-- back to `rate` (the full price) when it isn't set.
 CREATE TABLE IF NOT EXISTS menu_items (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL,
   category TEXT NOT NULL,
   rate INTEGER NOT NULL,
+  rate_half INTEGER,
   availability BOOLEAN DEFAULT 1,
   top_item BOOLEAN DEFAULT 0,
   image_ref_id TEXT NOT NULL
@@ -14,8 +18,9 @@ CREATE TABLE IF NOT EXISTS menu_items (
 CREATE TABLE IF NOT EXISTS orders (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   customer_name TEXT,
+  instructions TEXT, -- free-form note to the chef, set by staff at order time
   total_amount INTEGER NOT NULL,
-  status TEXT NOT NULL, -- pending_payment, in_kitchen, ready, completed
+  status TEXT NOT NULL, -- pending_payment, in_kitchen, in_progress, ready, completed
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 

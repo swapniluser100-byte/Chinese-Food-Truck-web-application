@@ -1,4 +1,4 @@
-export type OrderStatus = "pending_payment" | "in_kitchen" | "ready" | "completed";
+export type OrderStatus = "pending_payment" | "in_kitchen" | "in_progress" | "ready" | "completed";
 export type OrderUnit = "half" | "full" | "gram";
 
 export const ORDER_UNITS: { value: OrderUnit; label: string }[] = [
@@ -12,6 +12,7 @@ export interface MenuItem {
   name: string;
   category: string;
   rate: number;
+  rate_half: number | null;
   availability: number;
   top_item: number;
   image_ref_id: string;
@@ -33,6 +34,7 @@ export interface OrderItemWithMenu {
 export interface OrderWithItems {
   id: number;
   customer_name: string | null;
+  instructions: string | null;
   total_amount: number;
   status: OrderStatus;
   created_at: string;

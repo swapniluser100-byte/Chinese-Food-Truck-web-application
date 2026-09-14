@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { StaffHome } from "./pages/staff/Home";
 import { StaffOrder } from "./pages/staff/Order";
 import { StaffActiveOrders } from "./pages/staff/ActiveOrders";
+import { StaffLayout } from "./pages/staff/StaffLayout";
 import { Kitchen } from "./pages/kitchen/Kitchen";
 import { AdminLogin } from "./pages/admin/Login";
 import { AdminLayout } from "./pages/admin/AdminLayout";
@@ -15,10 +16,12 @@ export default function App() {
     <Routes>
       <Route path="/" element={<Navigate to="/staff" replace />} />
 
-      <Route path="/staff" element={<StaffHome />} />
-      <Route path="/staff/order" element={<StaffOrder />} />
-      <Route path="/staff/order/:menuItemId" element={<StaffOrder />} />
-      <Route path="/staff/orders" element={<StaffActiveOrders />} />
+      <Route element={<StaffLayout />}>
+        <Route path="/staff" element={<StaffHome />} />
+        <Route path="/staff/order" element={<StaffOrder />} />
+        <Route path="/staff/order/:menuItemId" element={<StaffOrder />} />
+        <Route path="/staff/orders" element={<StaffActiveOrders />} />
+      </Route>
 
       <Route path="/kitchen" element={<Kitchen />} />
 

@@ -29,6 +29,7 @@ export function StaffOrder() {
 
   const [cart, setCart] = useState<CartLine[]>([]);
   const [customerName, setCustomerName] = useState("");
+  const [instructions, setInstructions] = useState("");
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<MenuItem[]>([]);
   const [error, setError] = useState("");
@@ -78,7 +79,11 @@ export function StaffOrder() {
 
   function setUnit(lineId: string, unit: OrderUnit) {
     setCart((prev) =>
-      prev.map((line) => (line.lineId === lineId ? { ...line, unit, quantity: unit === "gram" ? 1 : line.quantity } : line))
+      prev.map((line) => {
+        if (line.lineId !== lineId) return line;
+        const rate = unit === "full" ? line.item.rate : unit === "half" ? line.item.rate_half ?? line.item.rate : line.rate;
+        return { ...line, unit, quantity: unit === "gram" ? 1 : line.quantity, rate };
+      })
     );
   }
 
@@ -103,6 +108,7 @@ export function StaffOrder() {
     try {
       const { order } = await api.createOrder({
         customer_name: customerName.trim() || undefined,
+        instructions: instructions.trim() || undefined,
         items: cart.map((line) => ({
           menu_item_id: line.item.id,
           quantity: line.quantity,
@@ -191,7 +197,10 @@ export function StaffOrder() {
                       />
                       <div className="flex-1 min-w-0">
                         <div className="font-medium truncate">{line.item.name}</div>
-                        <div className="text-xs text-neutral-500">Menu price: ₹{line.item.rate}</div>
+                        <div className="text-xs text-neutral-500">
+                          Full ₹{line.item.rate}
+                          {line.item.rate_half ? ` · Half ₹${line.item.rate_half}` : ""}
+                        </div>
                       </div>
                       <button onClick={() => removeLine(line.lineId)} className="text-red-500 text-sm font-medium px-1 self-start">
                         Remove
@@ -270,6 +279,17 @@ export function StaffOrder() {
               />
             </div>
 
+            <div>
+              <label className="block text-sm font-medium mb-1">Instructions for Chef (optional)</label>
+              <textarea
+                value={instructions}
+                onChange={(e) => setInstructions(e.target.value)}
+                placeholder="e.g. Less spicy, no onions"
+                rows={2}
+                className="w-full px-4 py-3 rounded-xl border border-neutral-300 text-base resize-none"
+              />
+            </div>
+
             <div className="bg-white rounded-xl p-4 flex items-center justify-between shadow-sm border border-neutral-200">
               <span className="text-neutral-600">Total</span>
               <span className="text-2xl font-bold text-brand-600">₹{cartTotal}</span>
@@ -300,6 +320,11 @@ export function StaffOrder() {
                 ))}
               </div>
               <div className="text-2xl font-bold text-brand-600 mt-2 text-center">₹{order.total_amount}</div>
+              {order.instructions && (
+                <div className="mt-3 text-sm bg-amber-50 border border-amber-200 rounded-lg p-2">
+                  <span className="font-medium">Instructions:</span> {order.instructions}
+                </div>
+              )}
             </div>
 
             <div className="bg-white rounded-xl p-4 shadow-sm border border-neutral-200 flex flex-col items-center gap-2">

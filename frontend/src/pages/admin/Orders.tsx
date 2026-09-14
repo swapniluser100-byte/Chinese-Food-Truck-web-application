@@ -33,7 +33,8 @@ export function AdminOrders() {
         <select value={status} onChange={(e) => setStatus(e.target.value)} className="px-3 py-2 rounded-lg border border-neutral-300">
           <option value="">All statuses</option>
           <option value="pending_payment">Pending Payment</option>
-          <option value="in_kitchen">In Kitchen</option>
+          <option value="in_kitchen">Queued</option>
+          <option value="in_progress">In Progress</option>
           <option value="ready">Ready</option>
           <option value="completed">Completed</option>
         </select>
@@ -54,6 +55,7 @@ export function AdminOrders() {
                 {summarizeItems(order)}
                 {order.customer_name ? ` — ${order.customer_name}` : ""}
               </div>
+              {order.instructions && <div className="text-xs text-amber-700 truncate">Note: {order.instructions}</div>}
               <div className="text-xs text-neutral-400">{new Date(order.created_at).toLocaleString()}</div>
             </div>
             <div className="font-bold text-brand-600">₹{order.total_amount}</div>
