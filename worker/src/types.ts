@@ -21,15 +21,30 @@ export interface MenuItem {
 export interface Order {
   id: number;
   customer_name: string | null;
-  menu_item_id: number;
-  quantity: number;
   total_amount: number;
   status: OrderStatus;
   created_at: string;
 }
 
-export interface OrderWithItem extends Order {
+export interface OrderItem {
+  id: number;
+  order_id: number;
+  menu_item_id: number;
+  quantity: number;
+  rate: number; // price per unit, snapshotted at order time
+}
+
+export interface OrderItemWithMenu extends OrderItem {
   item_name: string;
   item_category: string;
   image_ref_id: string;
+}
+
+export interface OrderWithItems extends Order {
+  items: OrderItemWithMenu[];
+}
+
+export interface NewOrderItemInput {
+  menu_item_id: number;
+  quantity: number;
 }

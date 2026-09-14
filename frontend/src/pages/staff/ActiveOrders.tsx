@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
 import { api } from "../../api";
-import type { OrderWithItem } from "../../types";
+import type { OrderWithItems } from "../../types";
+import { summarizeItems } from "../../orderSummary";
 import { StatusBadge } from "../../components/StatusBadge";
 import { TopBar } from "../../components/TopBar";
 
 export function StaffActiveOrders() {
-  const [orders, setOrders] = useState<OrderWithItem[]>([]);
+  const [orders, setOrders] = useState<OrderWithItems[]>([]);
   const [error, setError] = useState("");
   const [completingId, setCompletingId] = useState<number | null>(null);
 
@@ -46,7 +47,7 @@ export function StaffActiveOrders() {
         title="Active Orders"
         tabs={[
           { to: "/staff", label: "Menu" },
-          { to: "/staff/orders", label: "Active Orders", marathi: "ऑर्डर्स" },
+          { to: "/staff/orders", label: "Active Orders" },
         ]}
       />
 
@@ -62,7 +63,7 @@ export function StaffActiveOrders() {
                 <StatusBadge status={order.status} />
               </div>
               <div className="truncate">
-                {order.quantity} × {order.item_name}
+                {summarizeItems(order)}
                 {order.customer_name ? ` — ${order.customer_name}` : ""}
               </div>
               <div className="text-sm text-neutral-500">₹{order.total_amount}</div>

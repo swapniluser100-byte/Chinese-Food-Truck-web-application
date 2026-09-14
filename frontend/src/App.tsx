@@ -15,6 +15,7 @@ export default function App() {
       <Route path="/" element={<Navigate to="/staff" replace />} />
 
       <Route path="/staff" element={<StaffHome />} />
+      <Route path="/staff/order" element={<StaffOrder />} />
       <Route path="/staff/order/:menuItemId" element={<StaffOrder />} />
       <Route path="/staff/orders" element={<StaffActiveOrders />} />
 

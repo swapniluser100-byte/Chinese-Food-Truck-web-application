@@ -1,6 +1,7 @@
 import { Hono } from "hono";
-import type { Env, MenuItem, OrderWithItem } from "../types";
+import type { Env, MenuItem, Order } from "../types";
 import { createAdminToken, requireAdmin } from "../auth";
+import { attachItems } from "../orderHelpers";
 
 export const adminRoutes = new Hono<{ Bindings: Env }>();
 
@@ -91,13 +92,11 @@ adminRoutes.get("/orders", async (c) => {
   }
   const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
   const stmt = c.env.DB.prepare(
-    `SELECT o.*, m.name as item_name, m.category as item_category, m.image_ref_id as image_ref_id
-     FROM orders o JOIN menu_items m ON m.id = o.menu_item_id
-     ${where}
-     ORDER BY o.created_at DESC LIMIT 500`
+    `SELECT * FROM orders o ${where} ORDER BY o.created_at DESC LIMIT 500`
   ).bind(...bindings);
-  const { results } = await stmt.all<OrderWithItem>();
-  return c.json({ orders: results });
+  const { results } = await stmt.all<Order>();
+  const orders = await attachItems(c.env.DB, results);
+  return c.json({ orders });
 });
 
 // ---- Reporting ----
@@ -108,18 +107,20 @@ adminRoutes.get("/summary", async (c) => {
 
   const totals = await c.env.DB.prepare(
     `SELECT
-       COUNT(*) as order_count,
-       COALESCE(SUM(total_amount), 0) as total_sales,
-       COALESCE(SUM(quantity), 0) as items_sold
-     FROM orders
-     WHERE date(created_at) = ?1 AND status = 'completed'`
+       (SELECT COUNT(*) FROM orders WHERE date(created_at) = ?1 AND status = 'completed') as order_count,
+       (SELECT COALESCE(SUM(total_amount), 0) FROM orders WHERE date(created_at) = ?1 AND status = 'completed') as total_sales,
+       (SELECT COALESCE(SUM(oi.quantity), 0)
+          FROM order_items oi JOIN orders o ON o.id = oi.order_id
+          WHERE date(o.created_at) = ?1 AND o.status = 'completed') as items_sold`
   )
     .bind(date)
     .first<{ order_count: number; total_sales: number; items_sold: number }>();
 
   const { results: byItem } = await c.env.DB.prepare(
-    `SELECT m.name as item_name, SUM(o.quantity) as quantity, SUM(o.total_amount) as revenue
-     FROM orders o JOIN menu_items m ON m.id = o.menu_item_id
+    `SELECT m.name as item_name, SUM(oi.quantity) as quantity, SUM(oi.quantity * oi.rate) as revenue
+     FROM order_items oi
+     JOIN orders o ON o.id = oi.order_id
+     JOIN menu_items m ON m.id = oi.menu_item_id
      WHERE date(o.created_at) = ?1 AND o.status = 'completed'
      GROUP BY m.name
      ORDER BY revenue DESC`
@@ -140,10 +141,13 @@ adminRoutes.get("/summary", async (c) => {
 adminRoutes.get("/export", async (c) => {
   const date = c.req.query("date") ?? new Date().toISOString().slice(0, 10);
   const { results } = await c.env.DB.prepare(
-    `SELECT o.id, o.customer_name, m.name as item_name, o.quantity, o.total_amount, o.status, o.created_at
-     FROM orders o JOIN menu_items m ON m.id = o.menu_item_id
+    `SELECT o.id, o.customer_name, m.name as item_name, oi.quantity, oi.rate,
+            (oi.quantity * oi.rate) as line_total, o.total_amount, o.status, o.created_at
+     FROM order_items oi
+     JOIN orders o ON o.id = oi.order_id
+     JOIN menu_items m ON m.id = oi.menu_item_id
      WHERE date(o.created_at) = ?1
-     ORDER BY o.created_at ASC`
+     ORDER BY o.created_at ASC, oi.id ASC`
   )
     .bind(date)
     .all<{
@@ -151,15 +155,17 @@ adminRoutes.get("/export", async (c) => {
       customer_name: string | null;
       item_name: string;
       quantity: number;
+      rate: number;
+      line_total: number;
       total_amount: number;
       status: string;
       created_at: string;
     }>();
 
-  const header = "Order ID,Customer Name,Item,Quantity,Total Amount,Status,Created At";
+  const header = "Order ID,Customer Name,Item,Quantity,Line Total,Order Total,Status,Created At";
   const escapeCsv = (v: string) => `"${v.replace(/"/g, '""')}"`;
   const rows = results.map((r) =>
-    [r.id, escapeCsv(r.customer_name ?? ""), escapeCsv(r.item_name), r.quantity, r.total_amount, r.status, r.created_at].join(",")
+    [r.id, escapeCsv(r.customer_name ?? ""), escapeCsv(r.item_name), r.quantity, r.line_total, r.total_amount, r.status, r.created_at].join(",")
   );
   const csv = [header, ...rows].join("\n");
 

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { api } from "../../api";
-import type { OrderWithItem } from "../../types";
+import type { OrderWithItems } from "../../types";
+import { summarizeItems } from "../../orderSummary";
 import { StatusBadge } from "../../components/StatusBadge";
 
 const todayIso = () => new Date().toISOString().slice(0, 10);
@@ -8,7 +9,7 @@ const todayIso = () => new Date().toISOString().slice(0, 10);
 export function AdminOrders() {
   const [date, setDate] = useState(todayIso());
   const [status, setStatus] = useState("");
-  const [orders, setOrders] = useState<OrderWithItem[]>([]);
+  const [orders, setOrders] = useState<OrderWithItems[]>([]);
   const [error, setError] = useState("");
 
   async function load() {
@@ -50,7 +51,7 @@ export function AdminOrders() {
                 <StatusBadge status={order.status} />
               </div>
               <div className="truncate">
-                {order.quantity} × {order.item_name}
+                {summarizeItems(order)}
                 {order.customer_name ? ` — ${order.customer_name}` : ""}
               </div>
               <div className="text-xs text-neutral-400">{new Date(order.created_at).toLocaleString()}</div>

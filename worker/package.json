@@ -9,6 +9,8 @@
     "db:seed:local": "wrangler d1 execute chinese_food_truck --local --file=./seed.sql",
     "db:migrate:remote": "wrangler d1 execute chinese_food_truck --remote --file=./schema.sql",
     "db:seed:remote": "wrangler d1 execute chinese_food_truck --remote --file=./seed.sql",
+    "db:migrate:0002:local": "wrangler d1 execute chinese_food_truck --local --file=./migrations/0002_multi_item_orders.sql",
+    "db:migrate:0002:remote": "wrangler d1 execute chinese_food_truck --remote --file=./migrations/0002_multi_item_orders.sql",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

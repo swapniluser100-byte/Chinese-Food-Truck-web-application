@@ -10,15 +10,22 @@ export interface MenuItem {
   image_ref_id: string;
 }
 
-export interface OrderWithItem {
+export interface OrderItemWithMenu {
   id: number;
-  customer_name: string | null;
+  order_id: number;
   menu_item_id: number;
   quantity: number;
-  total_amount: number;
-  status: OrderStatus;
-  created_at: string;
+  rate: number;
   item_name: string;
   item_category: string;
   image_ref_id: string;
+}
+
+export interface OrderWithItems {
+  id: number;
+  customer_name: string | null;
+  total_amount: number;
+  status: OrderStatus;
+  created_at: string;
+  items: OrderItemWithMenu[];
 }

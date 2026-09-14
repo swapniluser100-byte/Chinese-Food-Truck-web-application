@@ -1,4 +1,4 @@
-import type { MenuItem, OrderWithItem } from "./types";
+import type { MenuItem, OrderWithItems } from "./types";
 
 const BASE = (import.meta.env.VITE_API_BASE ?? "").replace(/\/$/, "");
 
@@ -34,18 +34,18 @@ export const api = {
   getMenuItem: (id: number) => request<{ item: MenuItem }>(`/api/menu/${id}`),
 
   // Orders (staff)
-  createOrder: (payload: { customer_name?: string; menu_item_id: number; quantity: number }) =>
-    request<{ order: OrderWithItem }>("/api/orders", { method: "POST", body: JSON.stringify(payload) }),
-  getOrder: (id: number) => request<{ order: OrderWithItem }>(`/api/orders/${id}`),
+  createOrder: (payload: { customer_name?: string; items: { menu_item_id: number; quantity: number }[] }) =>
+    request<{ order: OrderWithItems }>("/api/orders", { method: "POST", body: JSON.stringify(payload) }),
+  getOrder: (id: number) => request<{ order: OrderWithItems }>(`/api/orders/${id}`),
   listOrders: (status?: string) =>
-    request<{ orders: OrderWithItem[] }>(`/api/orders${status ? `?status=${status}` : ""}`),
-  startPreparation: (id: number) => request<{ order: OrderWithItem }>(`/api/orders/${id}/start-preparation`, { method: "POST" }),
-  completeOrder: (id: number) => request<{ order: OrderWithItem }>(`/api/orders/${id}/complete`, { method: "POST" }),
+    request<{ orders: OrderWithItems[] }>(`/api/orders${status ? `?status=${status}` : ""}`),
+  startPreparation: (id: number) => request<{ order: OrderWithItems }>(`/api/orders/${id}/start-preparation`, { method: "POST" }),
+  completeOrder: (id: number) => request<{ order: OrderWithItems }>(`/api/orders/${id}/complete`, { method: "POST" }),
   qrUrl: (id: number) => `${BASE}/api/orders/${id}/qr`,
 
   // Kitchen
-  getKitchenOrders: () => request<{ orders: OrderWithItem[] }>("/api/kitchen/orders"),
-  markReady: (id: number) => request<{ order: OrderWithItem }>(`/api/kitchen/orders/${id}/ready`, { method: "POST" }),
+  getKitchenOrders: () => request<{ orders: OrderWithItems[] }>("/api/kitchen/orders"),
+  markReady: (id: number) => request<{ order: OrderWithItems }>(`/api/kitchen/orders/${id}/ready`, { method: "POST" }),
 
   // Admin
   adminLogin: (password: string) => request<{ token: string }>("/api/admin/login", { method: "POST", body: JSON.stringify({ password }) }),
@@ -58,7 +58,7 @@ export const api = {
   adminListOrders: (params: { date?: string; status?: string } = {}) => {
     const entries = Object.entries(params).filter(([, v]) => v !== undefined && v !== "") as [string, string][];
     const qs = new URLSearchParams(entries).toString();
-    return request<{ orders: OrderWithItem[] }>(`/api/admin/orders${qs ? `?${qs}` : ""}`, {}, true);
+    return request<{ orders: OrderWithItems[] }>(`/api/admin/orders${qs ? `?${qs}` : ""}`, {}, true);
   },
   adminSummary: (date?: string) =>
     request<{

@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
 import { api } from "../../api";
-import type { OrderWithItem } from "../../types";
+import type { OrderWithItems } from "../../types";
 import { TopBar } from "../../components/TopBar";
 
 export function Kitchen() {
-  const [orders, setOrders] = useState<OrderWithItem[]>([]);
+  const [orders, setOrders] = useState<OrderWithItems[]>([]);
   const [error, setError] = useState("");
   const [markingId, setMarkingId] = useState<number | null>(null);
 
@@ -37,7 +37,7 @@ export function Kitchen() {
 
   return (
     <div className="pb-8">
-      <TopBar title="Kitchen / किचन" />
+      <TopBar title="Kitchen" />
 
       <div className="p-4 space-y-3">
         {error && <p className="text-red-600 text-sm">{error}</p>}
@@ -49,8 +49,12 @@ export function Kitchen() {
               <span className="text-lg font-bold">Order #{order.id}</span>
               <span className="text-xs text-neutral-400">{new Date(order.created_at).toLocaleTimeString()}</span>
             </div>
-            <div className="text-2xl font-semibold">
-              {order.quantity} × {order.item_name}
+            <div className="space-y-1">
+              {order.items.map((line) => (
+                <div key={line.id} className="text-2xl font-semibold">
+                  {line.quantity} × {line.item_name}
+                </div>
+              ))}
             </div>
             {order.customer_name && <div className="text-neutral-500 mt-1">For: {order.customer_name}</div>}
 
@@ -59,7 +63,7 @@ export function Kitchen() {
               disabled={markingId === order.id}
               className="tap-target mt-4 w-full py-4 rounded-xl bg-green-600 text-white text-lg font-bold shadow disabled:opacity-50"
             >
-              {markingId === order.id ? "…" : "Mark Ready / तयार"}
+              {markingId === order.id ? "…" : "Mark Ready"}
             </button>
           </div>
         ))}
