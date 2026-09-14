@@ -51,7 +51,7 @@ export interface Settings {
   app_id: string;
 }
 
-export interface LicenseStatus {
+export interface RenewalStatus {
   active: boolean;
   renewal_date: string | null;
   amount: number | null;

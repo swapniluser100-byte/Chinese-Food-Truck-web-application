@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { api } from "../api";
 import { useBranding } from "../BrandingContext";
-import type { LicenseStatus } from "../types";
+import type { RenewalStatus } from "../types";
 
-export function RenewalRequired({ status, onRecheck }: { status: LicenseStatus; onRecheck: () => Promise<void> }) {
+export function RenewalRequired({ status, onRecheck }: { status: RenewalStatus; onRecheck: () => Promise<void> }) {
   const { settings } = useBranding();
   const [checking, setChecking] = useState(false);
 
@@ -42,7 +42,7 @@ export function RenewalRequired({ status, onRecheck }: { status: LicenseStatus; 
 
             <div className="flex flex-col items-center gap-2">
               <div className="font-semibold text-sm">Scan to Pay via UPI</div>
-              <img src={api.licenseQrUrl()} alt="UPI payment QR code" width={220} height={220} className="rounded-lg" />
+              <img src={api.renewalQrUrl()} alt="UPI payment QR code" width={220} height={220} className="rounded-lg" />
             </div>
           </>
         )}

@@ -3,17 +3,17 @@ import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App";
 import { BrandingProvider } from "./BrandingContext";
-import { LicenseGate } from "./LicenseGate";
+import { RenewalGate } from "./RenewalGate";
 import "./styles.css";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <BrandingProvider>
-      <LicenseGate>
+      <RenewalGate>
         <BrowserRouter>
           <App />
         </BrowserRouter>
-      </LicenseGate>
+      </RenewalGate>
     </BrandingProvider>
   </React.StrictMode>
 );
