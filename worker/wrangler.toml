@@ -1,0 +1,21 @@
+name = "chinese-food-truck-api"
+main = "src/index.ts"
+compatibility_date = "2024-11-01"
+compatibility_flags = ["nodejs_compat"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "chinese_food_truck"
+database_id = "REPLACE_WITH_YOUR_D1_DATABASE_ID"
+
+# Set these with `wrangler secret put <NAME>` — do NOT put real secrets here.
+# ADMIN_PASSWORD      - password admin staff use to log into the Admin Portal
+# TOKEN_SECRET        - random long string used to sign admin session tokens
+# UPI_ID              - the food truck's UPI VPA, e.g. foodtruck@okhdfcbank
+# UPI_PAYEE_NAME      - name shown in the UPI app, e.g. "Wok On Wheels"
+
+[vars]
+UPI_PAYEE_NAME = "Chinese Food Truck"
+
+[observability]
+enabled = true

@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  @apply bg-neutral-100 text-neutral-900;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.order-image {
+  width: 180px;
+  height: 180px;
+  object-fit: cover;
+  margin: 0 auto;
+  display: block;
+  border-radius: 12px;
+}
+
+.tap-target {
+  @apply active:scale-95 transition-transform;
+}

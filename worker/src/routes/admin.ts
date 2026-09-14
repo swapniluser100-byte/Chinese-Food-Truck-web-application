@@ -1,0 +1,170 @@
+import { Hono } from "hono";
+import type { Env, MenuItem, OrderWithItem } from "../types";
+import { createAdminToken, requireAdmin } from "../auth";
+
+export const adminRoutes = new Hono<{ Bindings: Env }>();
+
+// POST /api/admin/login — public, issues a session token
+adminRoutes.post("/login", async (c) => {
+  const { password } = await c.req.json<{ password?: string }>();
+  if (!c.env.ADMIN_PASSWORD) return c.json({ error: "ADMIN_PASSWORD is not configured on the server" }, 500);
+  if (!password || password !== c.env.ADMIN_PASSWORD) {
+    return c.json({ error: "Invalid password" }, 401);
+  }
+  const token = await createAdminToken(c.env.TOKEN_SECRET);
+  return c.json({ token });
+});
+
+// Everything below requires a valid admin token
+adminRoutes.use("/*", requireAdmin);
+
+// ---- Menu management ----
+
+adminRoutes.get("/menu", async (c) => {
+  const { results } = await c.env.DB.prepare("SELECT * FROM menu_items ORDER BY category, name").all<MenuItem>();
+  return c.json({ items: results });
+});
+
+adminRoutes.post("/menu", async (c) => {
+  const body = await c.req.json<Partial<MenuItem>>();
+  const { name, category, rate, availability = 1, top_item = 0, image_ref_id } = body;
+  if (!name || !category || !Number.isFinite(rate) || !image_ref_id) {
+    return c.json({ error: "name, category, rate, and image_ref_id are required" }, 400);
+  }
+  const result = await c.env.DB.prepare(
+    `INSERT INTO menu_items (name, category, rate, availability, top_item, image_ref_id)
+     VALUES (?1, ?2, ?3, ?4, ?5, ?6)`
+  )
+    .bind(name, category, rate, availability ? 1 : 0, top_item ? 1 : 0, image_ref_id)
+    .run();
+  const item = await c.env.DB.prepare("SELECT * FROM menu_items WHERE id = ?1").bind(result.meta.last_row_id).first();
+  return c.json({ item }, 201);
+});
+
+adminRoutes.put("/menu/:id", async (c) => {
+  const id = Number(c.req.param("id"));
+  if (!Number.isInteger(id)) return c.json({ error: "Invalid id" }, 400);
+  const existing = await c.env.DB.prepare("SELECT * FROM menu_items WHERE id = ?1").bind(id).first<MenuItem>();
+  if (!existing) return c.json({ error: "Not found" }, 404);
+
+  const body = await c.req.json<Partial<MenuItem>>();
+  const merged: MenuItem = {
+    ...existing,
+    ...body,
+    availability: body.availability !== undefined ? (body.availability ? 1 : 0) : existing.availability,
+    top_item: body.top_item !== undefined ? (body.top_item ? 1 : 0) : existing.top_item,
+  };
+
+  await c.env.DB.prepare(
+    `UPDATE menu_items SET name = ?1, category = ?2, rate = ?3, availability = ?4, top_item = ?5, image_ref_id = ?6
+     WHERE id = ?7`
+  )
+    .bind(merged.name, merged.category, merged.rate, merged.availability, merged.top_item, merged.image_ref_id, id)
+    .run();
+
+  const item = await c.env.DB.prepare("SELECT * FROM menu_items WHERE id = ?1").bind(id).first();
+  return c.json({ item });
+});
+
+adminRoutes.delete("/menu/:id", async (c) => {
+  const id = Number(c.req.param("id"));
+  if (!Number.isInteger(id)) return c.json({ error: "Invalid id" }, 400);
+  await c.env.DB.prepare("DELETE FROM menu_items WHERE id = ?1").bind(id).run();
+  return c.json({ ok: true });
+});
+
+// ---- Orders ----
+
+// GET /api/admin/orders?date=YYYY-MM-DD&status=completed
+adminRoutes.get("/orders", async (c) => {
+  const date = c.req.query("date");
+  const status = c.req.query("status");
+  const conditions: string[] = [];
+  const bindings: unknown[] = [];
+  if (date) {
+    conditions.push(`date(o.created_at) = ?${bindings.length + 1}`);
+    bindings.push(date);
+  }
+  if (status) {
+    conditions.push(`o.status = ?${bindings.length + 1}`);
+    bindings.push(status);
+  }
+  const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
+  const stmt = c.env.DB.prepare(
+    `SELECT o.*, m.name as item_name, m.category as item_category, m.image_ref_id as image_ref_id
+     FROM orders o JOIN menu_items m ON m.id = o.menu_item_id
+     ${where}
+     ORDER BY o.created_at DESC LIMIT 500`
+  ).bind(...bindings);
+  const { results } = await stmt.all<OrderWithItem>();
+  return c.json({ orders: results });
+});
+
+// ---- Reporting ----
+
+// GET /api/admin/summary?date=YYYY-MM-DD (defaults to today, server's UTC date)
+adminRoutes.get("/summary", async (c) => {
+  const date = c.req.query("date") ?? new Date().toISOString().slice(0, 10);
+
+  const totals = await c.env.DB.prepare(
+    `SELECT
+       COUNT(*) as order_count,
+       COALESCE(SUM(total_amount), 0) as total_sales,
+       COALESCE(SUM(quantity), 0) as items_sold
+     FROM orders
+     WHERE date(created_at) = ?1 AND status = 'completed'`
+  )
+    .bind(date)
+    .first<{ order_count: number; total_sales: number; items_sold: number }>();
+
+  const { results: byItem } = await c.env.DB.prepare(
+    `SELECT m.name as item_name, SUM(o.quantity) as quantity, SUM(o.total_amount) as revenue
+     FROM orders o JOIN menu_items m ON m.id = o.menu_item_id
+     WHERE date(o.created_at) = ?1 AND o.status = 'completed'
+     GROUP BY m.name
+     ORDER BY revenue DESC`
+  )
+    .bind(date)
+    .all<{ item_name: string; quantity: number; revenue: number }>();
+
+  const { results: byStatus } = await c.env.DB.prepare(
+    `SELECT status, COUNT(*) as count FROM orders WHERE date(created_at) = ?1 GROUP BY status`
+  )
+    .bind(date)
+    .all<{ status: string; count: number }>();
+
+  return c.json({ date, totals, byItem, byStatus });
+});
+
+// GET /api/admin/export?date=YYYY-MM-DD — CSV export of that day's orders
+adminRoutes.get("/export", async (c) => {
+  const date = c.req.query("date") ?? new Date().toISOString().slice(0, 10);
+  const { results } = await c.env.DB.prepare(
+    `SELECT o.id, o.customer_name, m.name as item_name, o.quantity, o.total_amount, o.status, o.created_at
+     FROM orders o JOIN menu_items m ON m.id = o.menu_item_id
+     WHERE date(o.created_at) = ?1
+     ORDER BY o.created_at ASC`
+  )
+    .bind(date)
+    .all<{
+      id: number;
+      customer_name: string | null;
+      item_name: string;
+      quantity: number;
+      total_amount: number;
+      status: string;
+      created_at: string;
+    }>();
+
+  const header = "Order ID,Customer Name,Item,Quantity,Total Amount,Status,Created At";
+  const escapeCsv = (v: string) => `"${v.replace(/"/g, '""')}"`;
+  const rows = results.map((r) =>
+    [r.id, escapeCsv(r.customer_name ?? ""), escapeCsv(r.item_name), r.quantity, r.total_amount, r.status, r.created_at].join(",")
+  );
+  const csv = [header, ...rows].join("\n");
+
+  return c.body(csv, 200, {
+    "Content-Type": "text/csv",
+    "Content-Disposition": `attachment; filename="orders_${date}.csv"`,
+  });
+});

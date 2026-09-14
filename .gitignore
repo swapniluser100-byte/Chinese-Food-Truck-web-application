@@ -1,0 +1,14 @@
+node_modules
+dist
+.DS_Store
+*.log
+*.tsbuildinfo
+
+# Worker
+worker/.wrangler
+worker/.dev.vars
+
+# Frontend
+frontend/.env
+frontend/.env.local
+frontend/.env.production

@@ -1,0 +1,27 @@
+-- Chinese Food Truck — D1 schema
+
+CREATE TABLE IF NOT EXISTS menu_items (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  category TEXT NOT NULL,
+  rate INTEGER NOT NULL,
+  availability BOOLEAN DEFAULT 1,
+  top_item BOOLEAN DEFAULT 0,
+  image_ref_id TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS orders (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  customer_name TEXT,
+  menu_item_id INTEGER NOT NULL,
+  quantity INTEGER NOT NULL,
+  total_amount INTEGER NOT NULL,
+  status TEXT NOT NULL, -- pending_payment, in_kitchen, ready, completed
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY(menu_item_id) REFERENCES menu_items(id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status);
+CREATE INDEX IF NOT EXISTS idx_orders_created_at ON orders(created_at);
+CREATE INDEX IF NOT EXISTS idx_menu_items_top ON menu_items(top_item);
+CREATE INDEX IF NOT EXISTS idx_menu_items_availability ON menu_items(availability);
