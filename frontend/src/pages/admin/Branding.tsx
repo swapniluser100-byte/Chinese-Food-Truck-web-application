@@ -160,6 +160,31 @@ export function AdminBranding() {
           {saving ? "Saving…" : "Save Branding"}
         </button>
       </form>
+
+      <div className="bg-white rounded-xl p-4 shadow-sm border border-neutral-200 space-y-3 mt-4">
+        <h2 className="font-semibold">Application Details</h2>
+        <p className="text-xs text-neutral-400 -mt-2">
+          Fixed identifiers for this deployment. Not editable here.
+        </p>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">Application Name</label>
+          <input
+            value={settings.app_name}
+            disabled
+            className="w-full px-3 py-2 rounded-lg border border-neutral-200 bg-neutral-100 text-neutral-500"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">Application Id</label>
+          <input
+            value={settings.app_id}
+            disabled
+            className="w-full px-3 py-2 rounded-lg border border-neutral-200 bg-neutral-100 text-neutral-500"
+          />
+        </div>
+      </div>
     </div>
   );
 }

@@ -13,13 +13,17 @@ binding = "MENU_IMAGES"
 bucket_name = "chinese-food-truck-menu-images"
 
 # Set these with `wrangler secret put <NAME>` — do NOT put real secrets here.
-# ADMIN_PASSWORD      - password admin staff use to log into the Admin Portal
-# TOKEN_SECRET        - random long string used to sign admin session tokens
-# UPI_ID              - the food truck's UPI VPA, e.g. foodtruck@okhdfcbank
-# UPI_PAYEE_NAME      - name shown in the UPI app, e.g. "Wok On Wheels"
+# ADMIN_PASSWORD        - password admin staff use to log into the Admin Portal
+# TOKEN_SECRET          - random long string used to sign admin session tokens
+# UPI_ID                - the food truck's UPI VPA, e.g. foodtruck@okhdfcbank
+# UPI_PAYEE_NAME        - name shown in the UPI app, e.g. "Wok On Wheels"
+# RENEWAL_UPI_ID        - the vendor's UPI VPA that receives renewal payments
+# RENEWAL_UPI_PAYEE_NAME - name shown in the UPI app for renewal payments
 
 [vars]
 UPI_PAYEE_NAME = "Chinese Food Truck"
+# Public Google Sheet the vendor uses to track each deployment's renewal date/amount by app_id.
+SHEET_ID = "1Q6aUi6u-i3VfvgxoOupQZhlZ-_aBu6I-Xes40tPUcSI"
 
 [observability]
 enabled = true

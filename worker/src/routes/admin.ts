@@ -212,6 +212,9 @@ adminRoutes.get("/export", async (c) => {
 });
 
 // ---- Branding ----
+// Note: app_name/app_id (the fixed licensing identity used to look up this
+// deployment's row in the renewal spreadsheet) are deliberately never read
+// from the request body below — they can only change via a direct DB edit.
 
 const MAX_LOGO_DATA_URL_LENGTH = 1_500_000; // ~1.1MB of raw image data once base64-decoded
 

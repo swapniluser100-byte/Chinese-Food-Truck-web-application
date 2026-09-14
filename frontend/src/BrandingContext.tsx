@@ -8,8 +8,10 @@ const DEFAULT_SETTINGS: Settings = {
   logo_data_url: null,
   menu_columns: 4,
   kitchen_columns: 2,
+  app_name: "Chinese Food Truck Web Application",
+  app_id: "ahJAFDCZT8Z51ms",
 };
-const STORAGE_KEY = "branding_cache_v2";
+const STORAGE_KEY = "branding_cache_v3";
 
 interface BrandingContextValue {
   settings: Settings;

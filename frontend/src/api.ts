@@ -1,4 +1,4 @@
-import type { MenuItem, OrderUnit, OrderWithItems, Settings } from "./types";
+import type { LicenseStatus, MenuItem, OrderUnit, OrderWithItems, Settings } from "./types";
 
 const BASE = (import.meta.env.VITE_API_BASE ?? "").replace(/\/$/, "");
 
@@ -103,10 +103,14 @@ export const api = {
     return res.blob();
   },
 
-  // Branding
+  // Branding — app_name/app_id are fixed and can't be changed via this call (see worker admin.ts)
   getSettings: () => request<{ settings: Settings }>("/api/settings"),
-  adminUpdateSettings: (settings: Settings) =>
+  adminUpdateSettings: (settings: Omit<Settings, "app_name" | "app_id">) =>
     request<{ settings: Settings }>("/api/admin/settings", { method: "PUT", body: JSON.stringify(settings) }, true),
+
+  // Licensing / renewal
+  getLicenseStatus: () => request<LicenseStatus>("/api/license/status"),
+  licenseQrUrl: () => `${BASE}/api/license/qr`,
 };
 
 export function setAdminToken(token: string) {

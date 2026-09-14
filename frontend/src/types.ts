@@ -47,4 +47,14 @@ export interface Settings {
   logo_data_url: string | null;
   menu_columns: number;
   kitchen_columns: number;
+  app_name: string;
+  app_id: string;
+}
+
+export interface LicenseStatus {
+  active: boolean;
+  renewal_date: string | null;
+  amount: number | null;
+  app_name: string;
+  app_id: string;
 }

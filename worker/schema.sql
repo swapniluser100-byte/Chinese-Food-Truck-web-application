@@ -43,13 +43,18 @@ CREATE TABLE IF NOT EXISTS order_items (
 -- — there's no object storage wired up for it, and a small logo fits fine in
 -- D1. menu_columns/kitchen_columns control tiles-per-row on the Staff Home
 -- menu grid and the Kitchen board, respectively.
+-- app_name/app_id identify this deployment in the vendor's renewal-tracking
+-- spreadsheet; the admin API never writes them (see PUT /api/admin/settings),
+-- so they're effectively read-only regardless of what a client sends.
 CREATE TABLE IF NOT EXISTS settings (
   id INTEGER PRIMARY KEY CHECK (id = 1),
   name TEXT NOT NULL DEFAULT 'Chinese Food Truck',
   slogan TEXT,
   logo_data_url TEXT,
   menu_columns INTEGER NOT NULL DEFAULT 4,
-  kitchen_columns INTEGER NOT NULL DEFAULT 2
+  kitchen_columns INTEGER NOT NULL DEFAULT 2,
+  app_name TEXT NOT NULL DEFAULT 'Chinese Food Truck Web Application',
+  app_id TEXT NOT NULL DEFAULT 'ahJAFDCZT8Z51ms'
 );
 
 CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status);
