@@ -44,6 +44,7 @@ export const api = {
     request<{ orders: OrderWithItems[] }>(`/api/orders${status ? `?status=${status}` : ""}`),
   startPreparation: (id: number) => request<{ order: OrderWithItems }>(`/api/orders/${id}/start-preparation`, { method: "POST" }),
   completeOrder: (id: number) => request<{ order: OrderWithItems }>(`/api/orders/${id}/complete`, { method: "POST" }),
+  cancelOrder: (id: number) => request<{ order: OrderWithItems }>(`/api/orders/${id}/cancel`, { method: "POST" }),
   qrUrl: (id: number) => `${BASE}/api/orders/${id}/qr`,
   imageUrl: (key: string) => `${BASE}/api/images/${key}`,
 

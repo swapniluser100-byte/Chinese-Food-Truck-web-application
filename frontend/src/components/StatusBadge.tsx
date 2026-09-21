@@ -6,6 +6,7 @@ const LABELS: Record<OrderStatus, { text: string; className: string }> = {
   in_progress: { text: "In Progress", className: "bg-blue-100 text-blue-800" },
   ready: { text: "Ready", className: "bg-green-100 text-green-800" },
   completed: { text: "Completed", className: "bg-neutral-200 text-neutral-600" },
+  cancelled: { text: "Cancelled", className: "bg-red-100 text-red-800" },
 };
 
 export function StatusBadge({ status }: { status: OrderStatus }) {

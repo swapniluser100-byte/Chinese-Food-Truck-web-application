@@ -1,4 +1,4 @@
-export type OrderStatus = "pending_payment" | "in_kitchen" | "in_progress" | "ready" | "completed";
+export type OrderStatus = "pending_payment" | "in_kitchen" | "in_progress" | "ready" | "completed" | "cancelled";
 export type OrderUnit = "half" | "full" | "gram";
 export const ORDER_UNITS: OrderUnit[] = ["half", "full", "gram"];
 

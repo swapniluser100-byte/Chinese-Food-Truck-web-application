@@ -133,3 +133,17 @@ orderRoutes.post("/:id/complete", async (c) => {
   const order = await getOrderWithItems(c.env, id);
   return c.json({ order });
 });
+
+// POST /api/orders/:id/cancel — staff cancels an order that hasn't been handed over yet
+orderRoutes.post("/:id/cancel", async (c) => {
+  const id = Number(c.req.param("id"));
+  if (!Number.isInteger(id)) return c.json({ error: "Invalid id" }, 400);
+  const existing = await c.env.DB.prepare("SELECT status FROM orders WHERE id = ?1").bind(id).first<{ status: string }>();
+  if (!existing) return c.json({ error: "Not found" }, 404);
+  if (existing.status === "completed" || existing.status === "cancelled") {
+    return c.json({ error: `Order is already ${existing.status}` }, 409);
+  }
+  await c.env.DB.prepare("UPDATE orders SET status = 'cancelled' WHERE id = ?1").bind(id).run();
+  const order = await getOrderWithItems(c.env, id);
+  return c.json({ order });
+});
