@@ -11,7 +11,7 @@ interface Props {
 // Coloured status tabs with live counts; tap one to filter, tap again to clear.
 export function StageChips({ stages, counts, filter, onChange }: Props) {
   return (
-    <div className="grid gap-3" style={{ gridTemplateColumns: `repeat(${stages.length}, minmax(0, 1fr))` }}>
+    <div className="flex flex-wrap gap-3">
       {stages.map((s) => {
         const t = STAGES[s];
         const active = filter === s;
@@ -20,7 +20,7 @@ export function StageChips({ stages, counts, filter, onChange }: Props) {
             key={s}
             onClick={() => onChange(active ? null : s)}
             aria-pressed={active}
-            className={`tap-target ${t.chip} text-white rounded-xl px-2 py-3 text-sm sm:text-base font-bold shadow flex items-center justify-center gap-2 transition ${
+            className={`tap-target ${t.chip} text-white rounded-xl px-2 py-3 flex-1 min-w-[170px] text-sm sm:text-base font-bold shadow flex items-center justify-center gap-2 transition ${
               filter && !active ? "opacity-50" : ""
             } ${active ? "ring-4 ring-neutral-900/20" : ""}`}
           >

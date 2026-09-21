@@ -36,14 +36,14 @@ export function OrderCard({ order, busy, onAdvance, onCancel, showPrice = true, 
       <div className={compact ? "p-3" : "flex gap-4 p-4"}>
         <div className={compact ? "flex items-center gap-2.5 mb-2" : "flex-shrink-0"}>
           <div
-            className={`${compact ? "w-14 h-14" : "w-24 h-24"} flex-shrink-0 rounded-xl overflow-hidden bg-gradient-to-br ${t.tile} p-1.5`}
+            className={`${compact ? "w-14 h-14" : "w-24 h-24"} flex-shrink-0 rounded-xl overflow-hidden bg-gradient-to-br ${t.tile} p-0.5`}
           >
             {first && (
               <MenuImage
                 imageRefId={first.image_ref_id}
                 category={first.item_category}
                 name={first.item_name}
-                className="w-full h-full object-cover rounded-lg"
+                className="w-full h-full object-cover rounded-[10px]"
               />
             )}
           </div>
