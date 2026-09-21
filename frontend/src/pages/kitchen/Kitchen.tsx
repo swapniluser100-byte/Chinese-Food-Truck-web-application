@@ -1,16 +1,20 @@
 import { useCallback, useEffect, useState } from "react";
 import { api } from "../../api";
-import type { OrderWithItems } from "../../types";
-import { formatOrderLine } from "../../orderSummary";
-import { StatusBadge } from "../../components/StatusBadge";
+import type { OrderStatus, OrderWithItems } from "../../types";
+import { STAGES } from "../../stages";
+import { OrderCard } from "../../components/OrderCard";
+import { StageChips } from "../../components/StageChips";
 import { TopBar } from "../../components/TopBar";
 import { useBranding } from "../../BrandingContext";
+
+const KITCHEN_STAGES: OrderStatus[] = ["in_kitchen", "in_progress"];
 
 export function Kitchen() {
   const { settings } = useBranding();
   const [orders, setOrders] = useState<OrderWithItems[]>([]);
   const [error, setError] = useState("");
   const [busyId, setBusyId] = useState<number | null>(null);
+  const [filter, setFilter] = useState<OrderStatus | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -27,10 +31,11 @@ export function Kitchen() {
     return () => clearInterval(interval);
   }, [load]);
 
-  async function startPreparation(id: number) {
-    setBusyId(id);
+  async function advance(order: OrderWithItems) {
+    setBusyId(order.id);
+    setError("");
     try {
-      await api.startInKitchen(id);
+      await STAGES[order.status].run!(order.id);
       await load();
     } catch (e) {
       setError((e as Error).message);
@@ -39,68 +44,30 @@ export function Kitchen() {
     }
   }
 
-  async function markReady(id: number) {
-    setBusyId(id);
-    try {
-      await api.markReady(id);
-      await load();
-    } catch (e) {
-      setError((e as Error).message);
-    } finally {
-      setBusyId(null);
-    }
-  }
+  const counts = Object.fromEntries(KITCHEN_STAGES.map((s) => [s, orders.filter((o) => o.status === s).length]));
+  const visible = filter ? orders.filter((o) => o.status === filter) : orders;
 
   return (
     <div className="pb-8">
       <TopBar title="Kitchen" />
 
-      <div className="p-4">
-        {error && <p className="text-red-600 text-sm mb-3">{error}</p>}
-        {orders.length === 0 && <p className="text-neutral-500 text-sm">No orders in the kitchen right now.</p>}
+      <div className="p-4 space-y-4">
+        <StageChips stages={KITCHEN_STAGES} counts={counts} filter={filter} onChange={setFilter} />
+
+        {error && <p className="text-red-600 text-sm">{error}</p>}
+        {visible.length === 0 && <p className="text-neutral-500 text-sm">No orders in the kitchen right now.</p>}
 
         <div className="grid gap-3" style={{ gridTemplateColumns: `repeat(${settings.kitchen_columns}, minmax(0, 1fr))` }}>
-          {orders.map((order) => (
-            <div key={order.id} className="bg-white rounded-2xl p-3 shadow-sm border border-neutral-200 flex flex-col">
-              <div className="flex items-center justify-between mb-1">
-                <span className="font-bold">#{order.id}</span>
-                <StatusBadge status={order.status} />
-              </div>
-              <span className="text-[11px] text-neutral-400 mb-1">{new Date(order.created_at).toLocaleTimeString()}</span>
-
-              <div className="space-y-0.5 mb-1">
-                {order.items.map((line) => (
-                  <div key={line.id} className="text-sm font-semibold leading-tight">
-                    {formatOrderLine(line)}
-                  </div>
-                ))}
-              </div>
-
-              {order.customer_name && <div className="text-xs text-neutral-500">For: {order.customer_name}</div>}
-              {order.instructions && (
-                <div className="text-xs bg-amber-50 border border-amber-200 rounded-lg p-1.5 mt-1">{order.instructions}</div>
-              )}
-
-              <div className="flex-1" />
-
-              {order.status === "in_kitchen" ? (
-                <button
-                  onClick={() => startPreparation(order.id)}
-                  disabled={busyId === order.id}
-                  className="tap-target mt-3 w-full py-2.5 rounded-xl bg-blue-600 text-white text-sm font-bold shadow disabled:opacity-50"
-                >
-                  {busyId === order.id ? "…" : "Start Preparation"}
-                </button>
-              ) : (
-                <button
-                  onClick={() => markReady(order.id)}
-                  disabled={busyId === order.id}
-                  className="tap-target mt-3 w-full py-2.5 rounded-xl bg-green-600 text-white text-sm font-bold shadow disabled:opacity-50"
-                >
-                  {busyId === order.id ? "…" : "Mark Ready"}
-                </button>
-              )}
-            </div>
+          {visible.map((order) => (
+            <OrderCard
+              key={order.id}
+              order={order}
+              busy={busyId === order.id}
+              onAdvance={() => advance(order)}
+              showPrice={false}
+              showTime
+              compact={settings.kitchen_columns >= 3}
+            />
           ))}
         </div>
       </div>

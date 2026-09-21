@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { api } from "../../api";
+import type { OrderStatus } from "../../types";
+import { STAGES } from "../../stages";
 
 const todayIso = () => new Date().toISOString().slice(0, 10);
 
@@ -75,8 +77,11 @@ export function AdminSummary() {
             <h3 className="font-semibold mb-2">Orders by Status</h3>
             <div className="flex gap-3 flex-wrap">
               {summary.byStatus.map((s) => (
-                <div key={s.status} className="text-sm bg-neutral-100 rounded-full px-3 py-1">
-                  {s.status}: <strong>{s.count}</strong>
+                <div key={s.status} className="inline-flex rounded-full overflow-hidden text-sm font-bold">
+                  <span className={`${STAGES[s.status as OrderStatus]?.pillId ?? "bg-neutral-600 text-white"} px-3 py-1`}>{s.count}</span>
+                  <span className={`${STAGES[s.status as OrderStatus]?.pillLabel ?? "bg-neutral-200"} px-3 py-1`}>
+                    {STAGES[s.status as OrderStatus]?.label ?? s.status}
+                  </span>
                 </div>
               ))}
               {summary.byStatus.length === 0 && <p className="text-sm text-neutral-500">No orders yet.</p>}

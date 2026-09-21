@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import { api } from "../../api";
 import type { OrderWithItems } from "../../types";
-import { summarizeItems } from "../../orderSummary";
-import { StatusBadge } from "../../components/StatusBadge";
+import { OrderCard } from "../../components/OrderCard";
 
 const todayIso = () => new Date().toISOString().slice(0, 10);
 
@@ -34,32 +33,19 @@ export function AdminOrders() {
           <option value="">All statuses</option>
           <option value="pending_payment">Pending Payment</option>
           <option value="in_kitchen">Queued</option>
-          <option value="in_progress">In Progress</option>
+          <option value="in_progress">Cooking</option>
           <option value="ready">Ready</option>
           <option value="completed">Completed</option>
+          <option value="cancelled">Cancelled</option>
         </select>
       </div>
 
       {error && <p className="text-red-600 text-sm">{error}</p>}
       {orders.length === 0 && <p className="text-neutral-500 text-sm">No orders for this filter.</p>}
 
-      <div className="space-y-2">
+      <div className="space-y-3">
         {orders.map((order) => (
-          <div key={order.id} className="bg-white rounded-xl p-3 shadow-sm border border-neutral-200 flex items-center gap-3">
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <span className="font-semibold">#{order.id}</span>
-                <StatusBadge status={order.status} />
-              </div>
-              <div className="truncate">
-                {summarizeItems(order)}
-                {order.customer_name ? ` — ${order.customer_name}` : ""}
-              </div>
-              {order.instructions && <div className="text-xs text-amber-700 truncate">Note: {order.instructions}</div>}
-              <div className="text-xs text-neutral-400">{new Date(order.created_at).toLocaleString()}</div>
-            </div>
-            <div className="font-bold text-brand-600">₹{order.total_amount}</div>
-          </div>
+          <OrderCard key={order.id} order={order} showTime compact />
         ))}
       </div>
     </div>
