@@ -61,7 +61,7 @@ export function StaffHome() {
       <div className="p-4 space-y-3">
         <Link
           to="/staff/order"
-          className="tap-target block w-full text-center py-3 rounded-xl bg-neutral-900 text-white font-semibold shadow"
+          className="tap-target block w-full text-center py-3.5 rounded-2xl bg-brand-500 text-white font-bold shadow"
         >
           + Start New Order (add multiple items)
         </Link>
@@ -69,7 +69,7 @@ export function StaffHome() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search menu (name or category)"
-          className="w-full px-4 py-3 rounded-xl border border-neutral-300 text-base"
+          className="field"
         />
       </div>
 
@@ -86,7 +86,10 @@ export function StaffHome() {
           {error && <p className="text-red-600 text-sm">{error}</p>}
           {byCategory.map(([category, items]) => (
             <div key={category}>
-              <h2 className="font-semibold text-neutral-600 mb-2">{category}</h2>
+              <h2 className="flex items-center gap-2 font-bold text-neutral-800 mb-2">
+                {category}
+                <span className="text-xs font-semibold text-neutral-600 bg-neutral-200 rounded-full px-2 py-0.5">{items.length}</span>
+              </h2>
               <div
                 className="grid gap-2"
                 style={{ gridTemplateColumns: `repeat(${settings.menu_columns}, minmax(0, 1fr))` }}
@@ -101,10 +104,10 @@ export function StaffHome() {
       )}
 
       <div className="fixed bottom-4 right-4 flex flex-col gap-2 text-xs">
-        <Link to="/kitchen" className="bg-neutral-800 text-white px-3 py-2 rounded-full shadow">
+        <Link to="/kitchen" className="bg-orange-500 text-white font-semibold px-3 py-2 rounded-full shadow">
           Kitchen View
         </Link>
-        <Link to="/admin" className="bg-neutral-800 text-white px-3 py-2 rounded-full shadow">
+        <Link to="/admin" className="bg-neutral-700 text-white font-semibold px-3 py-2 rounded-full shadow">
           Admin
         </Link>
       </div>

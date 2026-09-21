@@ -10,7 +10,7 @@ export function MenuButton({ item }: { item: MenuItem }) {
   return (
     <button
       onClick={() => navigate(`/staff/order/${item.id}`)}
-      className="tap-target relative aspect-square rounded-xl shadow-md overflow-hidden text-left"
+      className="tap-target relative aspect-square rounded-2xl shadow-sm ring-1 ring-black/5 overflow-hidden text-left"
     >
       <MenuImage
         imageRefId={item.image_ref_id}
@@ -20,7 +20,7 @@ export function MenuButton({ item }: { item: MenuItem }) {
       />
       <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/85 via-black/60 to-transparent pt-4 pb-1.5 px-1.5">
         <div className="font-semibold text-xs leading-tight line-clamp-2 text-white">{item.name}</div>
-        <div className="text-white font-bold text-sm mt-0.5">₹{item.rate}</div>
+        <span className="inline-block bg-brand-500 text-white font-bold text-xs rounded-full px-2 py-0.5 mt-1">₹{item.rate}</span>
       </div>
     </button>
   );

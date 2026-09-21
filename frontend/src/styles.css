@@ -20,6 +20,11 @@ body {
   border-radius: 12px;
 }
 
+.field {
+  @apply w-full px-4 py-3 rounded-xl border border-neutral-300 bg-white text-base
+    focus:outline-none focus:ring-2 focus:ring-brand-400/50 focus:border-brand-400;
+}
+
 .tap-target {
   @apply active:scale-95 transition-transform;
 }

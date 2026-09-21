@@ -6,6 +6,7 @@ import { ORDER_UNITS } from "../../types";
 import { formatOrderLine } from "../../orderSummary";
 import { MenuImage } from "../../components/MenuImage";
 import { TopBar } from "../../components/TopBar";
+import { STAGES } from "../../stages";
 
 const DEFAULT_GRAMS = 250;
 
@@ -152,7 +153,7 @@ export function StaffOrder() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search menu by name or category"
-                className="w-full px-4 py-3 rounded-xl border border-neutral-300 text-base"
+                className="field"
               />
               {query.trim() && (
                 <div className="mt-2 space-y-2">
@@ -161,19 +162,19 @@ export function StaffOrder() {
                     <button
                       key={item.id}
                       onClick={() => addToCart(item)}
-                      className="tap-target w-full flex items-center gap-3 bg-white rounded-xl border border-neutral-200 shadow-sm p-2 text-left"
+                      className="tap-target w-full flex items-center gap-3 bg-white rounded-2xl border border-neutral-200 shadow-sm p-2.5 text-left"
                     >
                       <MenuImage
                         imageRefId={item.image_ref_id}
                         category={item.category}
                         name={item.name}
-                        className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
+                        className="w-12 h-12 rounded-xl object-cover flex-shrink-0"
                       />
                       <div className="flex-1 min-w-0">
                         <div className="font-medium truncate">{item.name}</div>
                         <div className="text-xs text-neutral-500">₹{item.rate}</div>
                       </div>
-                      <span className="text-brand-600 font-bold text-lg px-2">+</span>
+                      <span className="bg-brand-500 text-white font-bold text-lg w-8 h-8 rounded-full flex items-center justify-center">+</span>
                     </button>
                   ))}
                 </div>
@@ -187,13 +188,14 @@ export function StaffOrder() {
             {cart.length > 0 && (
               <div className="space-y-2">
                 {cart.map((line) => (
-                  <div key={line.lineId} className="bg-white rounded-xl p-3 shadow-sm border border-neutral-200 space-y-2">
+                  <div key={line.lineId} className="bg-white rounded-2xl shadow-sm border border-neutral-200 overflow-hidden">
+                    <div className="p-3 space-y-2">
                     <div className="flex items-center gap-3">
                       <MenuImage
                         imageRefId={line.item.image_ref_id}
                         category={line.item.category}
                         name={line.item.name}
-                        className="w-14 h-14 rounded-lg object-cover flex-shrink-0"
+                        className="w-14 h-14 rounded-xl object-cover flex-shrink-0"
                       />
                       <div className="flex-1 min-w-0">
                         <div className="font-medium truncate">{line.item.name}</div>
@@ -202,7 +204,7 @@ export function StaffOrder() {
                           {line.item.rate_half ? ` · Half ₹${line.item.rate_half}` : ""}
                         </div>
                       </div>
-                      <button onClick={() => removeLine(line.lineId)} className="text-red-500 text-sm font-medium px-1 self-start">
+                      <button onClick={() => removeLine(line.lineId)} className="tap-target bg-neutral-600 text-white text-xs font-semibold rounded-lg px-2.5 py-1.5 self-start">
                         Remove
                       </button>
                     </div>
@@ -211,7 +213,7 @@ export function StaffOrder() {
                       <select
                         value={line.unit}
                         onChange={(e) => setUnit(line.lineId, e.target.value as OrderUnit)}
-                        className="px-2 py-2 rounded-lg border border-neutral-300 text-sm"
+                        className="px-2 py-2 rounded-lg border border-neutral-300 bg-white text-sm"
                       >
                         {ORDER_UNITS.map((u) => (
                           <option key={u.value} value={u.value}>
@@ -245,14 +247,14 @@ export function StaffOrder() {
                       ) : (
                         <div className="flex items-center gap-2 ml-auto">
                           <button
-                            className="tap-target w-8 h-8 rounded-full bg-neutral-200 text-lg font-bold"
+                            className="tap-target w-8 h-8 rounded-full bg-brand-500 text-white text-lg font-bold leading-none"
                             onClick={() => setQuantity(line.lineId, line.quantity - 1)}
                           >
                             −
                           </button>
                           <span className="w-6 text-center font-semibold">{line.quantity}</span>
                           <button
-                            className="tap-target w-8 h-8 rounded-full bg-neutral-200 text-lg font-bold"
+                            className="tap-target w-8 h-8 rounded-full bg-brand-500 text-white text-lg font-bold leading-none"
                             onClick={() => setQuantity(line.lineId, line.quantity + 1)}
                           >
                             +
@@ -261,8 +263,10 @@ export function StaffOrder() {
                       )}
                     </div>
 
-                    <div className="text-right text-sm font-semibold text-brand-600">
-                      Subtotal: ₹{line.rate * line.quantity}
+                    </div>
+                    <div className="flex items-center justify-between px-3 py-2 bg-neutral-50 border-t border-neutral-200">
+                      <span className="text-sm text-neutral-500">Subtotal</span>
+                      <span className="text-lg font-semibold text-neutral-700">₹{line.rate * line.quantity}</span>
                     </div>
                   </div>
                 ))}
@@ -275,7 +279,7 @@ export function StaffOrder() {
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
                 placeholder="e.g. Ramesh"
-                className="w-full px-4 py-3 rounded-xl border border-neutral-300 text-base"
+                className="field"
               />
             </div>
 
@@ -286,12 +290,12 @@ export function StaffOrder() {
                 onChange={(e) => setInstructions(e.target.value)}
                 placeholder="e.g. Less spicy, no onions"
                 rows={2}
-                className="w-full px-4 py-3 rounded-xl border border-neutral-300 text-base resize-none"
+                className="field resize-none"
               />
             </div>
 
-            <div className="bg-white rounded-xl p-4 flex items-center justify-between shadow-sm border border-neutral-200">
-              <span className="text-neutral-600">Total</span>
+            <div className="bg-white rounded-2xl px-4 py-3 flex items-center justify-between shadow-sm border border-neutral-200">
+              <span className="text-neutral-600 font-medium">Total</span>
               <span className="text-2xl font-bold text-brand-600">₹{cartTotal}</span>
             </div>
 
@@ -300,7 +304,7 @@ export function StaffOrder() {
             <button
               onClick={handleSaveOrder}
               disabled={saving || cart.length === 0}
-              className="tap-target w-full py-4 rounded-xl bg-brand-500 text-white text-lg font-bold shadow disabled:opacity-50"
+              className="tap-target w-full py-4 rounded-2xl bg-brand-500 text-white text-lg font-bold shadow disabled:opacity-50"
             >
               {saving ? "Saving…" : "Save Order & Show QR"}
             </button>
@@ -309,8 +313,13 @@ export function StaffOrder() {
 
         {order && (
           <div className="space-y-5">
-            <div className="bg-white rounded-xl p-4 shadow-sm border border-neutral-200">
-              <div className="text-sm text-neutral-500 text-center mb-2">Order #{order.id}</div>
+            <div className="bg-white rounded-2xl p-4 shadow-sm border border-neutral-200">
+              <div className="flex justify-center mb-3">
+                <div className="inline-flex rounded-full overflow-hidden text-sm font-bold">
+                  <span className={`${STAGES.pending_payment.pillId} px-3 py-1`}>#{order.id}</span>
+                  <span className={`${STAGES.pending_payment.pillLabel} px-3 py-1`}>{STAGES.pending_payment.label}</span>
+                </div>
+              </div>
               <div className="space-y-1">
                 {order.items.map((line) => (
                   <div key={line.id} className="flex justify-between text-sm border-b border-neutral-100 py-1 last:border-0">
@@ -327,18 +336,18 @@ export function StaffOrder() {
               )}
             </div>
 
-            <div className="bg-white rounded-xl p-4 shadow-sm border border-neutral-200 flex flex-col items-center gap-2">
+            <div className="bg-white rounded-2xl p-4 shadow-sm border border-neutral-200 flex flex-col items-center gap-2">
               <div className="font-semibold">Scan to Pay via UPI</div>
               <img src={api.qrUrl(order.id)} alt="UPI payment QR code" width={240} height={240} className="rounded-lg" />
               <div className="text-xs text-neutral-500">Ask customer to scan &amp; pay ₹{order.total_amount}</div>
             </div>
 
-            <label className="flex items-center gap-3 bg-white rounded-xl p-4 shadow-sm border border-neutral-200">
+            <label className="flex items-center gap-3 bg-white rounded-2xl p-4 shadow-sm border border-neutral-200">
               <input
                 type="checkbox"
                 checked={paymentConfirmed}
                 onChange={(e) => setPaymentConfirmed(e.target.checked)}
-                className="w-6 h-6"
+                className="w-6 h-6 accent-green-600"
               />
               <span className="font-medium">Payment received</span>
             </label>
@@ -348,7 +357,7 @@ export function StaffOrder() {
             <button
               onClick={handleStartPreparation}
               disabled={!paymentConfirmed || starting}
-              className="tap-target w-full py-4 rounded-xl bg-green-600 text-white text-lg font-bold shadow disabled:opacity-40"
+              className="tap-target w-full py-4 rounded-2xl bg-green-600 text-white text-lg font-bold shadow disabled:opacity-40"
             >
               {starting ? "Sending…" : "Start Preparation → Kitchen"}
             </button>
