@@ -26,7 +26,7 @@ export function AdminLayout() {
         ]}
       />
       <div className="px-4 pt-2 flex justify-end">
-        <button onClick={logout} className="text-sm text-neutral-500 underline">
+        <button onClick={logout} className="tap-target bg-neutral-700 text-white text-xs font-semibold rounded-full px-3 py-1.5">
           Log out
         </button>
       </div>

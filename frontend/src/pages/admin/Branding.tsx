@@ -72,8 +72,9 @@ export function AdminBranding() {
 
   return (
     <div className="p-4 max-w-md mx-auto">
-      <form onSubmit={handleSave} className="bg-white rounded-xl p-4 shadow-sm border border-neutral-200 space-y-4">
-        <h2 className="font-semibold">App Branding</h2>
+      <form onSubmit={handleSave} className="bg-white rounded-2xl shadow-sm border border-neutral-200 overflow-hidden">
+        <h2 className="font-bold px-4 py-3 bg-neutral-50 border-b border-neutral-200">App Branding</h2>
+        <div className="p-4 space-y-4">
 
         <div>
           <label className="block text-sm font-medium mb-1">Business Name</label>
@@ -82,7 +83,7 @@ export function AdminBranding() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="e.g. Wok On Wheels"
-            className="w-full px-3 py-2 rounded-lg border border-neutral-300"
+            className="field"
           />
         </div>
 
@@ -92,7 +93,7 @@ export function AdminBranding() {
             value={slogan}
             onChange={(e) => setSlogan(e.target.value)}
             placeholder="e.g. Hot noodles, fast wheels"
-            className="w-full px-3 py-2 rounded-lg border border-neutral-300"
+            className="field"
           />
         </div>
 
@@ -100,9 +101,9 @@ export function AdminBranding() {
           <label className="block text-sm font-medium mb-1">Logo (optional)</label>
           <div className="flex items-center gap-3">
             {logoDataUrl ? (
-              <img src={logoDataUrl} alt="Logo preview" className="w-16 h-16 rounded-lg object-cover border border-neutral-200" />
+              <img src={logoDataUrl} alt="Logo preview" className="w-16 h-16 rounded-xl object-cover border border-neutral-200" />
             ) : (
-              <div className="w-16 h-16 rounded-lg border border-dashed border-neutral-300 flex items-center justify-center text-2xl">
+              <div className="w-16 h-16 rounded-xl border border-dashed border-neutral-300 flex items-center justify-center text-2xl">
                 🥡
               </div>
             )}
@@ -124,7 +125,7 @@ export function AdminBranding() {
             <select
               value={menuColumns}
               onChange={(e) => setMenuColumns(Number(e.target.value))}
-              className="w-full px-3 py-2 rounded-lg border border-neutral-300"
+              className="field"
             >
               {[1, 2, 3, 4, 5, 6].map((n) => (
                 <option key={n} value={n}>
@@ -138,7 +139,7 @@ export function AdminBranding() {
             <select
               value={kitchenColumns}
               onChange={(e) => setKitchenColumns(Number(e.target.value))}
-              className="w-full px-3 py-2 rounded-lg border border-neutral-300"
+              className="field"
             >
               {[1, 2, 3, 4, 5, 6].map((n) => (
                 <option key={n} value={n}>
@@ -152,18 +153,22 @@ export function AdminBranding() {
         {error && <p className="text-red-600 text-sm">{error}</p>}
         {saved && <p className="text-green-600 text-sm">Saved — branding updated everywhere.</p>}
 
-        <button
-          type="submit"
-          disabled={saving}
-          className="w-full py-3 rounded-xl bg-brand-500 text-white font-bold disabled:opacity-50"
-        >
-          {saving ? "Saving…" : "Save Branding"}
-        </button>
+        </div>
+        <div className="px-4 py-3 bg-neutral-50 border-t border-neutral-200">
+          <button
+            type="submit"
+            disabled={saving}
+            className="tap-target w-full py-3 rounded-xl bg-brand-500 text-white font-bold disabled:opacity-50"
+          >
+            {saving ? "Saving…" : "Save Branding"}
+          </button>
+        </div>
       </form>
 
-      <div className="bg-white rounded-xl p-4 shadow-sm border border-neutral-200 space-y-3 mt-4">
-        <h2 className="font-semibold">Application Details</h2>
-        <p className="text-xs text-neutral-400 -mt-2">
+      <div className="bg-white rounded-2xl shadow-sm border border-neutral-200 overflow-hidden mt-4">
+        <h2 className="font-bold px-4 py-3 bg-neutral-50 border-b border-neutral-200">Application Details</h2>
+        <div className="p-4 space-y-3">
+        <p className="text-xs text-neutral-400">
           Fixed identifiers for this deployment. Not editable here.
         </p>
 
@@ -172,7 +177,7 @@ export function AdminBranding() {
           <input
             value={settings.app_name}
             disabled
-            className="w-full px-3 py-2 rounded-lg border border-neutral-200 bg-neutral-100 text-neutral-500"
+            className="w-full px-4 py-3 rounded-xl border border-neutral-200 bg-neutral-100 text-neutral-500"
           />
         </div>
 
@@ -181,8 +186,9 @@ export function AdminBranding() {
           <input
             value={settings.app_id}
             disabled
-            className="w-full px-3 py-2 rounded-lg border border-neutral-200 bg-neutral-100 text-neutral-500"
+            className="w-full px-4 py-3 rounded-xl border border-neutral-200 bg-neutral-100 text-neutral-500"
           />
+        </div>
         </div>
       </div>
     </div>

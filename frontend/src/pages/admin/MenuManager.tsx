@@ -132,15 +132,16 @@ export function MenuManager() {
     <div className="p-4 space-y-6 max-w-2xl mx-auto">
       {error && <p className="text-red-600 text-sm">{error}</p>}
 
-      <form onSubmit={handleSubmit} className="bg-white rounded-xl p-4 shadow-sm border border-neutral-200 space-y-3">
-        <h2 className="font-semibold">{editingId ? `Edit Item #${editingId}` : "Add New Item"}</h2>
+      <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-sm border border-neutral-200 overflow-hidden">
+        <h2 className="font-bold px-4 py-3 bg-neutral-50 border-b border-neutral-200">{editingId ? `Edit Item #${editingId}` : "Add New Item"}</h2>
+        <div className="p-4 space-y-3">
 
         <div className="flex items-center gap-3">
           <MenuImage
             imageRefId={form.image_ref_id}
             category={form.category}
             name={form.name || "Menu item"}
-            className="w-16 h-16 rounded-lg object-cover border border-neutral-200 flex-shrink-0"
+            className="w-16 h-16 rounded-xl object-cover border border-neutral-200 flex-shrink-0"
           />
           <div className="flex flex-col gap-1">
             <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageChange} className="text-sm" />
@@ -155,7 +156,7 @@ export function MenuManager() {
             placeholder="Name"
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
-            className="col-span-2 px-3 py-2 rounded-lg border border-neutral-300"
+            className="field col-span-2"
           />
           {addingCategory || categories.length === 0 ? (
             <div className="col-span-2 flex gap-2">
@@ -165,7 +166,7 @@ export function MenuManager() {
                 placeholder="New category name"
                 value={form.category}
                 onChange={(e) => setForm({ ...form, category: e.target.value })}
-                className="flex-1 px-3 py-2 rounded-lg border border-neutral-300"
+                className="field flex-1"
               />
               {categories.length > 0 && (
                 <button
@@ -174,7 +175,7 @@ export function MenuManager() {
                     setAddingCategory(false);
                     setForm((f) => ({ ...f, category: categories[0] }));
                   }}
-                  className="px-3 py-2 rounded-lg bg-neutral-200 text-sm"
+                  className="tap-target px-3 py-2 rounded-lg bg-neutral-600 text-white text-sm font-semibold"
                 >
                   Cancel
                 </button>
@@ -185,7 +186,7 @@ export function MenuManager() {
               required
               value={form.category}
               onChange={(e) => handleCategorySelect(e.target.value)}
-              className="col-span-2 px-3 py-2 rounded-lg border border-neutral-300"
+              className="field col-span-2"
             >
               <option value="" disabled>
                 Select category
@@ -205,15 +206,15 @@ export function MenuManager() {
             placeholder="Full Rate (₹)"
             value={form.rate || ""}
             onChange={(e) => setForm({ ...form, rate: Number(e.target.value) })}
-            className="px-3 py-2 rounded-lg border border-neutral-300"
+            className="field"
           />
           <input
             type="number"
             min={0}
-            placeholder="Half Rate (₹, optional)"
+            placeholder="Half Rate (₹)"
             value={form.rate_half}
             onChange={(e) => setForm({ ...form, rate_half: e.target.value === "" ? "" : Number(e.target.value) })}
-            className="px-3 py-2 rounded-lg border border-neutral-300"
+            className="field"
           />
           <label className="flex items-center gap-2">
             <input
@@ -232,16 +233,17 @@ export function MenuManager() {
             Top 10 item
           </label>
         </div>
-        <div className="flex gap-2">
+        </div>
+        <div className="flex gap-2 px-4 py-3 bg-neutral-50 border-t border-neutral-200">
           <button
             type="submit"
             disabled={saving || uploading || !form.image_ref_id}
-            className="flex-1 py-2 rounded-lg bg-brand-500 text-white font-semibold disabled:opacity-50"
+            className="tap-target flex-1 py-2.5 rounded-lg bg-brand-500 text-white font-semibold disabled:opacity-50"
           >
             {saving ? "Saving…" : editingId ? "Save Changes" : "Add Item"}
           </button>
           {editingId && (
-            <button type="button" onClick={resetForm} className="px-4 py-2 rounded-lg bg-neutral-200">
+            <button type="button" onClick={resetForm} className="tap-target px-4 py-2 rounded-lg bg-neutral-600 text-white font-semibold">
               Cancel
             </button>
           )}
@@ -250,12 +252,12 @@ export function MenuManager() {
 
       <div className="space-y-2">
         {items.map((item) => (
-          <div key={item.id} className="bg-white rounded-xl p-3 shadow-sm border border-neutral-200 flex items-center gap-3">
+          <div key={item.id} className="bg-white rounded-2xl p-3 shadow-sm border border-neutral-200 flex items-center gap-3">
             <MenuImage
               imageRefId={item.image_ref_id}
               category={item.category}
               name={item.name}
-              className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
+              className="w-14 h-14 rounded-xl object-cover flex-shrink-0"
             />
             <div className="flex-1 min-w-0">
               <div className="font-medium truncate">{item.name}</div>
@@ -266,22 +268,22 @@ export function MenuManager() {
               <div className="flex gap-2 mt-1">
                 <button
                   onClick={() => toggleField(item, "availability")}
-                  className={`text-xs px-2 py-0.5 rounded-full ${item.availability ? "bg-green-100 text-green-700" : "bg-neutral-200 text-neutral-500"}`}
+                  className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${item.availability ? "bg-green-600 text-white" : "bg-neutral-300 text-neutral-700"}`}
                 >
                   {item.availability ? "Available" : "Unavailable"}
                 </button>
                 <button
                   onClick={() => toggleField(item, "top_item")}
-                  className={`text-xs px-2 py-0.5 rounded-full ${item.top_item ? "bg-blue-100 text-blue-700" : "bg-neutral-200 text-neutral-500"}`}
+                  className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${item.top_item ? "bg-blue-600 text-white" : "bg-neutral-300 text-neutral-700"}`}
                 >
                   {item.top_item ? "Top 10" : "Not top"}
                 </button>
               </div>
             </div>
-            <button onClick={() => startEdit(item)} className="text-sm px-3 py-1.5 rounded-lg bg-neutral-200">
+            <button onClick={() => startEdit(item)} className="tap-target text-sm font-semibold px-3 py-1.5 rounded-lg bg-blue-600 text-white">
               Edit
             </button>
-            <button onClick={() => handleDelete(item.id)} className="text-sm px-3 py-1.5 rounded-lg bg-red-100 text-red-700">
+            <button onClick={() => handleDelete(item.id)} className="tap-target text-sm font-semibold px-3 py-1.5 rounded-lg bg-red-600 text-white">
               Delete
             </button>
           </div>

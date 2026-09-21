@@ -28,8 +28,8 @@ export function AdminOrders() {
   return (
     <div className="p-4 space-y-4 max-w-2xl mx-auto">
       <div className="flex gap-2">
-        <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="px-3 py-2 rounded-lg border border-neutral-300 flex-1" />
-        <select value={status} onChange={(e) => setStatus(e.target.value)} className="px-3 py-2 rounded-lg border border-neutral-300">
+        <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="field flex-1" />
+        <select value={status} onChange={(e) => setStatus(e.target.value)} className="field !w-auto">
           <option value="">All statuses</option>
           <option value="pending_payment">Pending Payment</option>
           <option value="in_kitchen">Queued</option>

@@ -43,14 +43,14 @@ export function AdminLogin() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="Admin password"
-          className="w-full px-4 py-3 rounded-xl border border-neutral-300"
+          className="field"
           autoFocus
         />
         {error && <p className="text-red-600 text-sm">{error}</p>}
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-3 rounded-xl bg-brand-500 text-white font-bold disabled:opacity-50"
+          className="tap-target w-full py-3.5 rounded-2xl bg-brand-500 text-white font-bold shadow disabled:opacity-50"
         >
           {loading ? "Signing in…" : "Sign In"}
         </button>

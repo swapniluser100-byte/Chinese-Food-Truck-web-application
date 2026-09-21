@@ -48,8 +48,8 @@ export function AdminSummary() {
   return (
     <div className="p-4 space-y-4 max-w-2xl mx-auto">
       <div className="flex gap-2 items-center">
-        <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="px-3 py-2 rounded-lg border border-neutral-300 flex-1" />
-        <button onClick={handleExport} disabled={exporting} className="px-4 py-2 rounded-lg bg-neutral-800 text-white font-semibold disabled:opacity-50">
+        <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="field flex-1" />
+        <button onClick={handleExport} disabled={exporting} className="tap-target px-4 py-3 rounded-xl bg-neutral-700 text-white font-semibold disabled:opacity-50">
           {exporting ? "Exporting…" : "Export CSV"}
         </button>
       </div>
@@ -59,21 +59,21 @@ export function AdminSummary() {
       {summary && (
         <>
           <div className="grid grid-cols-3 gap-3">
-            <div className="bg-white rounded-xl p-4 shadow-sm border border-neutral-200 text-center">
+            <div className="bg-white rounded-2xl p-4 shadow-sm border border-neutral-200 text-center">
               <div className="text-2xl font-bold text-brand-600">₹{summary.totals.total_sales}</div>
               <div className="text-xs text-neutral-500">Total Sales</div>
             </div>
-            <div className="bg-white rounded-xl p-4 shadow-sm border border-neutral-200 text-center">
+            <div className="bg-white rounded-2xl p-4 shadow-sm border border-neutral-200 text-center">
               <div className="text-2xl font-bold">{summary.totals.order_count}</div>
               <div className="text-xs text-neutral-500">Completed Orders</div>
             </div>
-            <div className="bg-white rounded-xl p-4 shadow-sm border border-neutral-200 text-center">
+            <div className="bg-white rounded-2xl p-4 shadow-sm border border-neutral-200 text-center">
               <div className="text-2xl font-bold">{summary.totals.items_sold}</div>
               <div className="text-xs text-neutral-500">Items Sold</div>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-neutral-200">
+          <div className="bg-white rounded-2xl p-4 shadow-sm border border-neutral-200">
             <h3 className="font-semibold mb-2">Orders by Status</h3>
             <div className="flex gap-3 flex-wrap">
               {summary.byStatus.map((s) => (
@@ -88,7 +88,7 @@ export function AdminSummary() {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-neutral-200">
+          <div className="bg-white rounded-2xl p-4 shadow-sm border border-neutral-200">
             <h3 className="font-semibold mb-2">Sales by Item (completed orders)</h3>
             <div className="space-y-1">
               {summary.byItem.map((row) => (
