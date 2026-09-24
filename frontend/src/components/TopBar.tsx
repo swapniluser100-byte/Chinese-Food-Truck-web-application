@@ -36,7 +36,7 @@ export function TopBar({ title, tabs }: { title: string; tabs?: Tab[] }) {
                 key={tab.to}
                 to={tab.to}
                 className={`px-3 py-1.5 rounded-full text-sm whitespace-nowrap ${
-                  active ? "bg-white text-brand-600 font-semibold" : "bg-brand-600/50"
+                  active ? "bg-white text-brand-600 font-semibold" : "bg-white/15 hover:bg-white/25"
                 }`}
               >
                 {tab.label}

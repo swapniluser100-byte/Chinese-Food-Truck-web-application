@@ -20,7 +20,7 @@ export function MenuButton({ item }: { item: MenuItem }) {
       />
       <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/85 via-black/60 to-transparent pt-4 pb-1.5 px-1.5">
         <div className="font-semibold text-xs leading-tight line-clamp-2 text-white">{item.name}</div>
-        <span className="inline-block bg-brand-500 text-white font-bold text-xs rounded-full px-2 py-0.5 mt-1">₹{item.rate}</span>
+        <div className="text-white/90 font-bold text-xs mt-0.5">₹{item.rate}</div>
       </div>
     </button>
   );
