@@ -175,7 +175,7 @@ export function MenuManager() {
                     setAddingCategory(false);
                     setForm((f) => ({ ...f, category: categories[0] }));
                   }}
-                  className="tap-target px-3 py-2 rounded-lg bg-neutral-600 text-white text-sm font-semibold"
+                  className="tap-target px-3 py-2 rounded-lg bg-neutral-500 hover:bg-neutral-600 text-white text-sm font-semibold"
                 >
                   Cancel
                 </button>
@@ -238,12 +238,12 @@ export function MenuManager() {
           <button
             type="submit"
             disabled={saving || uploading || !form.image_ref_id}
-            className="tap-target flex-1 py-2.5 rounded-lg bg-brand-500 text-white font-semibold disabled:opacity-50"
+            className="tap-target flex-1 py-2.5 rounded-lg bg-brand-500 hover:bg-brand-600 text-white font-semibold disabled:opacity-50 transition-colors"
           >
             {saving ? "Saving…" : editingId ? "Save Changes" : "Add Item"}
           </button>
           {editingId && (
-            <button type="button" onClick={resetForm} className="tap-target px-4 py-2 rounded-lg bg-neutral-600 text-white font-semibold">
+            <button type="button" onClick={resetForm} className="tap-target px-4 py-2 rounded-lg bg-neutral-500 hover:bg-neutral-600 text-white font-semibold">
               Cancel
             </button>
           )}
@@ -280,10 +280,10 @@ export function MenuManager() {
                 </button>
               </div>
             </div>
-            <button onClick={() => startEdit(item)} className="tap-target text-sm font-semibold px-3 py-1.5 rounded-lg bg-blue-600 text-white">
+            <button onClick={() => startEdit(item)} className="tap-target text-sm font-semibold px-3 py-1.5 rounded-lg bg-blue-500 hover:bg-blue-600 text-white">
               Edit
             </button>
-            <button onClick={() => handleDelete(item.id)} className="tap-target text-sm font-semibold px-3 py-1.5 rounded-lg bg-red-600 text-white">
+            <button onClick={() => handleDelete(item.id)} className="tap-target text-sm font-semibold px-3 py-1.5 rounded-lg bg-red-500 hover:bg-red-600 text-white">
               Delete
             </button>
           </div>

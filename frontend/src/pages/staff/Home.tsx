@@ -61,7 +61,7 @@ export function StaffHome() {
       <div className="p-4 space-y-3">
         <Link
           to="/staff/order"
-          className="tap-target block w-full text-center py-3.5 rounded-2xl bg-brand-700 hover:bg-brand-800 text-white font-bold shadow"
+          className="tap-target block w-full text-center py-3.5 rounded-2xl bg-brand-500 hover:bg-brand-600 text-white font-bold shadow"
         >
           + Start New Order (add multiple items)
         </Link>
@@ -104,10 +104,10 @@ export function StaffHome() {
       )}
 
       <div className="fixed bottom-4 right-4 flex flex-col gap-2 text-xs">
-        <Link to="/kitchen" className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-3 py-2 rounded-full shadow">
+        <Link to="/kitchen" className="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-3 py-2 rounded-full shadow">
           Kitchen View
         </Link>
-        <Link to="/admin" className="bg-neutral-700 hover:bg-neutral-600 text-white font-semibold px-3 py-2 rounded-full shadow">
+        <Link to="/admin" className="bg-neutral-500 hover:bg-neutral-600 text-white font-semibold px-3 py-2 rounded-full shadow">
           Admin
         </Link>
       </div>

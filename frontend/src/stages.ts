@@ -33,7 +33,7 @@ export const STAGES: Record<OrderStatus, StageTheme> = {
     softBorder: "border-amber-200",
     hoverSoft: "hover:bg-amber-50",
     action: "Confirm Payment",
-    actionClass: "bg-emerald-600 hover:bg-emerald-700",
+    actionClass: "bg-emerald-500 hover:bg-emerald-600",
     run: api.startPreparation,
   },
   in_kitchen: {
@@ -44,7 +44,7 @@ export const STAGES: Record<OrderStatus, StageTheme> = {
     softBorder: "border-slate-200",
     hoverSoft: "hover:bg-slate-50",
     action: "Start Cooking",
-    actionClass: "bg-blue-600 hover:bg-blue-700",
+    actionClass: "bg-blue-500 hover:bg-blue-600",
     run: api.startInKitchen,
   },
   in_progress: {
@@ -55,7 +55,7 @@ export const STAGES: Record<OrderStatus, StageTheme> = {
     softBorder: "border-blue-200",
     hoverSoft: "hover:bg-blue-50",
     action: "Mark Ready",
-    actionClass: "bg-emerald-600 hover:bg-emerald-700",
+    actionClass: "bg-emerald-500 hover:bg-emerald-600",
     run: api.markReady,
   },
   ready: {
@@ -66,7 +66,7 @@ export const STAGES: Record<OrderStatus, StageTheme> = {
     softBorder: "border-emerald-200",
     hoverSoft: "hover:bg-emerald-50",
     action: "Complete Order",
-    actionClass: "bg-blue-600 hover:bg-blue-700",
+    actionClass: "bg-blue-500 hover:bg-blue-600",
     run: api.completeOrder,
   },
   completed: {

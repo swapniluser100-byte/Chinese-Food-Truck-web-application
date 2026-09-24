@@ -204,7 +204,7 @@ export function StaffOrder() {
                           {line.item.rate_half ? ` · Half ₹${line.item.rate_half}` : ""}
                         </div>
                       </div>
-                      <button onClick={() => removeLine(line.lineId)} className="tap-target bg-neutral-600 text-white text-xs font-semibold rounded-lg px-2.5 py-1.5 self-start">
+                      <button onClick={() => removeLine(line.lineId)} className="tap-target bg-neutral-500 hover:bg-neutral-600 text-white text-xs font-semibold rounded-lg px-2.5 py-1.5 self-start">
                         Remove
                       </button>
                     </div>
@@ -361,7 +361,7 @@ export function StaffOrder() {
             <button
               onClick={handleStartPreparation}
               disabled={!paymentConfirmed || starting}
-              className="tap-target w-full py-4 rounded-2xl bg-green-600 text-white text-lg font-bold shadow disabled:opacity-40"
+              className="tap-target w-full py-4 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white text-lg font-bold shadow disabled:opacity-40"
             >
               {starting ? "Sending…" : "Start Preparation → Kitchen"}
             </button>

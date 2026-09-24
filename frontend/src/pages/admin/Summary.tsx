@@ -49,7 +49,7 @@ export function AdminSummary() {
     <div className="p-4 space-y-4 max-w-2xl mx-auto">
       <div className="flex gap-2 items-center">
         <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="field flex-1" />
-        <button onClick={handleExport} disabled={exporting} className="tap-target px-4 py-3 rounded-xl bg-neutral-700 text-white font-semibold disabled:opacity-50">
+        <button onClick={handleExport} disabled={exporting} className="tap-target px-4 py-3 rounded-xl bg-neutral-500 hover:bg-neutral-600 text-white font-semibold disabled:opacity-50">
           {exporting ? "Exporting…" : "Export CSV"}
         </button>
       </div>

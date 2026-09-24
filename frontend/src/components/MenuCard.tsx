@@ -20,7 +20,7 @@ export function MenuCard({ item }: { item: MenuItem }) {
         <div className="font-medium truncate">{item.name}</div>
         <div className="text-xs text-neutral-500">{item.category}</div>
       </div>
-      <span className="bg-brand-700 text-white font-bold text-sm rounded-full px-3 py-1">₹{item.rate}</span>
+      <span className="bg-brand-500 text-white font-bold text-sm rounded-full px-3 py-1">₹{item.rate}</span>
     </button>
   );
 }
