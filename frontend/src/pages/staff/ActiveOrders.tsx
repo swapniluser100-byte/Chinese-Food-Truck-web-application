@@ -59,6 +59,10 @@ export function StaffActiveOrders() {
           { to: "/staff", label: "Menu" },
           { to: "/staff/orders", label: "Active Orders" },
         ]}
+        links={[
+          { to: "/kitchen", label: "Kitchen", icon: "🍳" },
+          { to: "/admin", label: "Admin", icon: "⚙️" },
+        ]}
       />
 
       <div className="p-4 space-y-4">

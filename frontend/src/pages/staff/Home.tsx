@@ -56,6 +56,10 @@ export function StaffHome() {
           { to: "/staff", label: "Menu" },
           { to: "/staff/orders", label: "Active Orders" },
         ]}
+        links={[
+          { to: "/kitchen", label: "Kitchen", icon: "🍳" },
+          { to: "/admin", label: "Admin", icon: "⚙️" },
+        ]}
       />
 
       <div className="lg:max-w-5xl lg:mx-auto">
@@ -103,15 +107,6 @@ export function StaffHome() {
             ))}
           </div>
         )}
-      </div>
-
-      <div className="fixed bottom-4 right-4 flex flex-col gap-2 text-xs">
-        <Link to="/kitchen" className="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-3 py-2 rounded-full shadow">
-          Kitchen View
-        </Link>
-        <Link to="/admin" className="bg-neutral-500 hover:bg-neutral-600 text-white font-semibold px-3 py-2 rounded-full shadow">
-          Admin
-        </Link>
       </div>
     </div>
   );
