@@ -76,14 +76,21 @@ export function AdminSummary() {
           <div className="bg-white rounded-2xl p-4 shadow-sm border border-neutral-200">
             <h3 className="font-semibold mb-2">Orders by Status</h3>
             <div className="flex gap-3 flex-wrap">
-              {summary.byStatus.map((s) => (
-                <div key={s.status} className="inline-flex rounded-full overflow-hidden text-sm font-bold">
-                  <span className={`${STAGES[s.status as OrderStatus]?.pillId ?? "bg-neutral-600 text-white"} px-3 py-1`}>{s.count}</span>
-                  <span className={`${STAGES[s.status as OrderStatus]?.pillLabel ?? "bg-neutral-200"} px-3 py-1`}>
-                    {STAGES[s.status as OrderStatus]?.label ?? s.status}
-                  </span>
-                </div>
-              ))}
+              {summary.byStatus.map((s) => {
+                const t = STAGES[s.status as OrderStatus];
+                return (
+                  <div
+                    key={s.status}
+                    className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm font-bold ${
+                      t ? `${t.soft} ${t.softText} ${t.softBorder}` : "bg-neutral-100 text-neutral-600 border-neutral-200"
+                    }`}
+                  >
+                    {t && <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${t.dot}`} />}
+                    <span>{t?.label ?? s.status}</span>
+                    <span className="opacity-60">· {s.count}</span>
+                  </div>
+                );
+              })}
               {summary.byStatus.length === 0 && <p className="text-sm text-neutral-500">No orders yet.</p>}
             </div>
           </div>

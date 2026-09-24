@@ -60,9 +60,12 @@ export function Kitchen() {
             const list = orders.filter((o) => o.status === status);
             return (
               <section key={status} className="space-y-3 min-w-0">
-                <div className={`${t.chip} text-white rounded-xl px-3 py-3 font-bold shadow flex items-center justify-center gap-2`}>
+                <div
+                  className={`flex items-center justify-center gap-2 rounded-xl border px-3 py-3 font-bold ${t.soft} ${t.softText} ${t.softBorder}`}
+                >
+                  <span className={`w-2 h-2 rounded-full flex-shrink-0 ${t.dot}`} />
                   {t.label}
-                  <span className={`${t.count} rounded-full px-2 py-0.5 text-sm`}>{list.length}</span>
+                  <span className="bg-white/70 rounded-full px-2 py-0.5 text-sm">{list.length}</span>
                 </div>
 
                 {list.length === 0 && <p className="text-neutral-500 text-sm text-center py-4">{empty}</p>}

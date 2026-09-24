@@ -5,11 +5,16 @@ export type ActiveStatus = Exclude<OrderStatus, "completed" | "cancelled">;
 
 export interface StageTheme {
   label: string;
-  chip: string;
-  count: string;
-  tile: string;
-  pillId: string;
-  pillLabel: string;
+  /** Solid brand color for the small status dot and the selected-chip fill. */
+  dot: string;
+  /** Tinted, low-saturation surface for the inactive chip and the order pill. */
+  soft: string;
+  /** Text color to pair with `soft`. */
+  softText: string;
+  /** Border color to pair with `soft`. */
+  softBorder: string;
+  /** Literal hover background class, paired with the soft surface. */
+  hoverSoft: string;
   action?: string;
   actionClass?: string;
   run?: (id: number) => Promise<unknown>;
@@ -17,66 +22,68 @@ export interface StageTheme {
 
 // Single source of truth for how each order status looks and what the
 // "next step" button does — shared by Active Orders, Kitchen and Admin Orders.
+// Tinted surfaces (soft/softText) keep the UI calm at a glance; the solid
+// `dot` color is reserved for small accents and the active/selected state.
 export const STAGES: Record<OrderStatus, StageTheme> = {
   pending_payment: {
     label: "Payment Pending",
-    chip: "bg-red-600",
-    count: "bg-red-800/40",
-    tile: "from-red-500 to-orange-600",
-    pillId: "bg-red-600 text-white",
-    pillLabel: "bg-red-500 text-white",
+    dot: "bg-amber-500",
+    soft: "bg-amber-50",
+    softText: "text-amber-800",
+    softBorder: "border-amber-200",
+    hoverSoft: "hover:bg-amber-50",
     action: "Confirm Payment",
-    actionClass: "bg-green-600",
+    actionClass: "bg-emerald-600 hover:bg-emerald-700",
     run: api.startPreparation,
   },
   in_kitchen: {
     label: "Queued",
-    chip: "bg-orange-500",
-    count: "bg-orange-700/40",
-    tile: "from-amber-300 to-orange-500",
-    pillId: "bg-orange-500 text-white",
-    pillLabel: "bg-amber-200 text-amber-900",
+    dot: "bg-slate-500",
+    soft: "bg-slate-100",
+    softText: "text-slate-700",
+    softBorder: "border-slate-200",
+    hoverSoft: "hover:bg-slate-50",
     action: "Start Cooking",
-    actionClass: "bg-blue-600",
+    actionClass: "bg-blue-600 hover:bg-blue-700",
     run: api.startInKitchen,
   },
   in_progress: {
     label: "Cooking",
-    chip: "bg-blue-600",
-    count: "bg-blue-900/40",
-    tile: "from-sky-400 to-blue-600",
-    pillId: "bg-blue-600 text-white",
-    pillLabel: "bg-blue-500 text-white",
+    dot: "bg-blue-500",
+    soft: "bg-blue-50",
+    softText: "text-blue-800",
+    softBorder: "border-blue-200",
+    hoverSoft: "hover:bg-blue-50",
     action: "Mark Ready",
-    actionClass: "bg-green-600",
+    actionClass: "bg-emerald-600 hover:bg-emerald-700",
     run: api.markReady,
   },
   ready: {
     label: "Ready",
-    chip: "bg-green-600",
-    count: "bg-green-900/40",
-    tile: "from-green-400 to-green-700",
-    pillId: "bg-green-600 text-white",
-    pillLabel: "bg-green-500 text-white",
+    dot: "bg-emerald-500",
+    soft: "bg-emerald-50",
+    softText: "text-emerald-800",
+    softBorder: "border-emerald-200",
+    hoverSoft: "hover:bg-emerald-50",
     action: "Complete Order",
-    actionClass: "bg-blue-600",
+    actionClass: "bg-blue-600 hover:bg-blue-700",
     run: api.completeOrder,
   },
   completed: {
     label: "Completed",
-    chip: "bg-neutral-600",
-    count: "bg-neutral-900/40",
-    tile: "from-neutral-400 to-neutral-600",
-    pillId: "bg-neutral-600 text-white",
-    pillLabel: "bg-neutral-300 text-neutral-800",
+    dot: "bg-neutral-400",
+    soft: "bg-neutral-100",
+    softText: "text-neutral-600",
+    softBorder: "border-neutral-200",
+    hoverSoft: "hover:bg-neutral-50",
   },
   cancelled: {
     label: "Cancelled",
-    chip: "bg-neutral-500",
-    count: "bg-neutral-800/40",
-    tile: "from-neutral-300 to-neutral-500",
-    pillId: "bg-neutral-500 text-white",
-    pillLabel: "bg-red-100 text-red-800",
+    dot: "bg-red-400",
+    soft: "bg-red-50",
+    softText: "text-red-700",
+    softBorder: "border-red-200",
+    hoverSoft: "hover:bg-red-50",
   },
 };
 

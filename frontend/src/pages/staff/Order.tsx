@@ -315,9 +315,13 @@ export function StaffOrder() {
           <div className="space-y-5">
             <div className="bg-white rounded-2xl p-4 shadow-sm border border-neutral-200">
               <div className="flex justify-center mb-3">
-                <div className="inline-flex rounded-full overflow-hidden text-sm font-bold">
-                  <span className={`${STAGES.pending_payment.pillId} px-3 py-1`}>#{order.id}</span>
-                  <span className={`${STAGES.pending_payment.pillLabel} px-3 py-1`}>{STAGES.pending_payment.label}</span>
+                <div
+                  className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm font-bold ${STAGES.pending_payment.soft} ${STAGES.pending_payment.softText} ${STAGES.pending_payment.softBorder}`}
+                >
+                  <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${STAGES.pending_payment.dot}`} />
+                  <span>
+                    #{order.id} · {STAGES.pending_payment.label}
+                  </span>
                 </div>
               </div>
               <div className="space-y-1">
