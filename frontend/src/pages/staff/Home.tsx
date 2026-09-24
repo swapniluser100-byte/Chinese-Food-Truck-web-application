@@ -61,7 +61,7 @@ export function StaffHome() {
       <div className="p-4 space-y-3">
         <Link
           to="/staff/order"
-          className="tap-target block w-full text-center py-3.5 rounded-2xl bg-neutral-900 hover:bg-neutral-800 text-white font-bold shadow"
+          className="tap-target block w-full text-center py-3.5 rounded-2xl bg-brand-700 hover:bg-brand-800 text-white font-bold shadow"
         >
           + Start New Order (add multiple items)
         </Link>
