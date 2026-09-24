@@ -28,3 +28,13 @@ body {
 .tap-target {
   @apply active:scale-95 transition-transform;
 }
+
+/* The Staff Menu grid's column count is an admin setting meant for a
+   phone/tablet held in hand — on a wide desktop window that same low
+   column count stretches each tile huge. Above 1024px, ignore it and
+   auto-fill with a sane tile width instead; phones/tablets are unaffected. */
+@media (min-width: 1024px) {
+  .menu-grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)) !important;
+  }
+}
